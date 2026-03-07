@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Eco.gpt — Economics Revision Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Dancing+Script:wght@600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+/* ══ THEMES ══ */
+[data-theme="dark"] {
+  --bg:         #000000;
+  --fg:         #ffffff;
+  --grey:       #aaaaaa;
+  --border:     rgba(255,255,255,.22);
+  --card-bg:    rgba(255,255,255,.05);
+  --card-hover: rgba(255,255,255,.10);
+  --accent:     #ffffff;
+}
+[data-theme="light"] {
+  --bg:         #f8feff;
+  --fg:         #080e18;
+  --grey:       #4a6070;
+  --border:     rgba(0,150,200,.18);
+  --card-bg:    rgba(255,255,255,.72);
+  --card-hover: rgba(220,245,255,.92);
+  --accent:     #00b4d8;
+}
+
+/* ══ TYPOGRAPHY MODES ══ */
+/* DARK = Barlow bold. LIGHT = Caveat cursive only */
+[data-theme="dark"] body { font-family:'Barlow', sans-serif; font-weight:600; letter-spacing:.02em; }
+[data-theme="light"] body { font-family:'Caveat', cursive; font-weight:600; }
+
+html {
+  font-size: clamp(14px, 1.1vw, 17px);
+}
+html, body {
+  width:100%; min-height:100%;
+  background:var(--bg);
+  color:var(--fg);
+  overflow-x:hidden;
+  overflow-y:auto;
+  cursor:none;
+  transition:background .5s, color .5s;
+}
+
+/* Additional styles omitted for brevity */
+
+</style>
+</head>
+<body>
+
+<!-- ══ BG CANVAS ══ -->
+<canvas id="bg-canvas"></canvas>
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+
+<!-- Theme toggle -->
+<button id="theme-btn" onclick="toggleTheme()" title="Toggle theme">
+  <svg viewBox="0 0 24 24" id="theme-icon-dark">
+    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+  <svg viewBox="0 0 24 24" id="theme-icon-light" style="display:none">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+  </svg>
+</button>
+
+<!-- Landing page content omitted for brevity -->
+
+</body>
+</html>
