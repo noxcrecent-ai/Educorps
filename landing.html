@@ -700,6 +700,15 @@ html,body{width:100%;min-height:100%;background:var(--bg);color:var(--fg);overfl
 
 <script>
 /* ════════════════════════════════════
+   CONSTANTS
+   ════════════════════════════════════ */
+const MS_PER_DAY = 86400000;
+// Scoring ratios for mock marking
+const SCORE_BASE = 0.5;       // minimum fraction awarded for a real answer
+const SCORE_BONUS = 0.45;     // random bonus range on top of base
+const SCORE_EMPTY_MAX = 0.35; // maximum fraction awarded when no answer given
+
+/* ════════════════════════════════════
    DATA
    ════════════════════════════════════ */
 const NOTES = [
@@ -904,7 +913,7 @@ function calcStreak(history){
   if(dates[dates.length-1]!==today) return 0;
   let streak=1;
   for(let i=dates.length-1;i>0;i--){
-    if((new Date(dates[i])-new Date(dates[i-1]))/86400000===1) streak++; else break;
+    if((new Date(dates[i])-new Date(dates[i-1]))/MS_PER_DAY===1) streak++; else break;
   }
   return streak;
 }
@@ -1142,6 +1151,18 @@ function durationToSeconds(dur){
 }
 function pad(n){return String(n).padStart(2,'0');}
 
+/* Helper: generate mock marking feedback based on score percentage */
+function generateFeedback(pct){
+  if(pct>=0.7) return 'Good answer with relevant economic terminology and clear analysis.';
+  if(pct>=0.4) return 'Partially correct — needs more development and specific examples.';
+  return 'Insufficient response. Ensure you address all parts of the question with economic theory.';
+}
+function generateTopicFeedback(pct){
+  if(pct>=0.7) return 'Well answered with clear economic reasoning.';
+  if(pct>=0.4) return 'Partially correct. Add more detail and use economic terminology.';
+  return 'Needs significant development.';
+}
+
 /* Submit all */
 function submitAllAndFeedback(){
   const paper=state.currentPaper;
@@ -1152,11 +1173,13 @@ function submitAllAndFeedback(){
     answer:state.splitAnswers[q.n]?.text||'(No answer provided)',
   }));
   setTimeout(()=>{
-    const results=answers.map(a=>{
-      const hasAnswer=a.answer&&a.answer!=='(No answer provided)'&&a.answer.trim().length>15;
-      const awarded=hasAnswer?Math.round(a.marks*(0.5+Math.random()*0.45)):Math.round(a.marks*Math.random()*0.35);
-      const pct=awarded/a.marks;
-      return{...a,awarded,feedback:pct>=0.7?'Good answer with relevant economic terminology and clear analysis.':pct>=0.4?'Partially correct — needs more development and specific examples.':'Insufficient response. Ensure you address all parts of the question with economic theory.'};
+    const results=answers.map(answerData=>{
+      const hasAnswer=answerData.answer&&answerData.answer!=='(No answer provided)'&&answerData.answer.trim().length>15;
+      const awarded=hasAnswer
+        ?Math.round(answerData.marks*(SCORE_BASE+Math.random()*SCORE_BONUS))
+        :Math.round(answerData.marks*Math.random()*SCORE_EMPTY_MAX);
+      const pct=awarded/answerData.marks;
+      return{...answerData,awarded,feedback:generateFeedback(pct)};
     });
     const total=results.reduce((s,r)=>s+r.awarded,0);
     const maxTotal=results.reduce((s,r)=>s+r.marks,0);
@@ -1246,11 +1269,13 @@ function finishExam(){
   showLoading();
   setTimeout(()=>{
     const results=exam.questions.map((q,i)=>{
-      const a=exam.answers[i]?.text||'';
-      const hasAnswer=a.trim().length>15;
-      const awarded=hasAnswer?Math.round(q.marks*(0.5+Math.random()*0.45)):Math.round(q.marks*Math.random()*0.3);
+      const answerText=exam.answers[i]?.text||'';
+      const hasAnswer=answerText.trim().length>15;
+      const awarded=hasAnswer
+        ?Math.round(q.marks*(SCORE_BASE+Math.random()*SCORE_BONUS))
+        :Math.round(q.marks*Math.random()*SCORE_EMPTY_MAX);
       const pct=awarded/q.marks;
-      return{question:q.text,marks:q.marks,answer:a,awarded,feedback:pct>=0.7?'Well answered with clear economic reasoning.':pct>=0.4?'Partially correct. Add more detail and use economic terminology.':'Needs significant development.'};
+      return{question:q.text,marks:q.marks,answer:answerText,awarded,feedback:generateTopicFeedback(pct)};
     });
     const total=results.reduce((s,r)=>s+r.awarded,0);
     const maxTotal=results.reduce((s,r)=>s+r.marks,0);
@@ -1413,7 +1438,7 @@ function initBackground(){
   const fsrc=`
     precision mediump float;
     uniform vec2 u_res;uniform float u_time;uniform int u_dark;
-    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}/* standard noise constants */
     float noise(vec2 p){
       vec2 i=floor(p),f=fract(p);
       f=f*f*(3.-2.*f);
