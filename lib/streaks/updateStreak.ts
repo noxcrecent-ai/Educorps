@@ -42,8 +42,9 @@ export async function updateStreak(userId: string): Promise<void> {
     // Consecutive day
     streakCount++
   } else {
-    // Streak broken
+    // Streak broken — reset to 1 (not 0) because the current activity counts as day 1 of a new streak.
     if (freezeActive) {
+      // Streak freeze absorbs one missed day; deactivate it and keep the existing count.
       freezeActive = false
     } else {
       streakCount = 1

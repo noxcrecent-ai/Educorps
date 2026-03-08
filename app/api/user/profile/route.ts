@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
  * GET /api/user/profile
  * Returns the current user's profile. NEVER includes groq_api_key.
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()

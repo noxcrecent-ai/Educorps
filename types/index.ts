@@ -266,14 +266,18 @@ export interface GradingResult {
   correct: string
   missing: string
   improve: string
+  /** Populated for maths, physics, and chemistry questions (method/working marks) */
   method_marks?: number
+  /** Populated for economics questions — Knowledge, Application, Analysis, Evaluation breakdown */
   kaa_breakdown?: {
     knowledge: string
     application: string
     analysis: string
     evaluation: string
   }
+  /** Populated for Computer Science questions — describes logical errors in pseudocode/algorithms */
   logic_errors?: string
+  /** Populated for Computer Science trace table questions — accuracy of traced output */
   output_accuracy?: string
 }
 

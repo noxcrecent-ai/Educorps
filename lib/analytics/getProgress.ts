@@ -14,7 +14,7 @@ import type { ProgressData } from '@/types'
 export async function getProgress(userId: string, subjectId?: string): Promise<ProgressData> {
   const admin = createAdminClient()
 
-  let query = admin
+  const query = admin
     .from('user_attempts')
     .select(`
       id,
@@ -94,10 +94,13 @@ export async function getProgress(userId: string, subjectId?: string): Promise<P
     bySubject[subjectSlug].by_topic[topicName].attempts++
   }
 
-  // Calculate accuracy values
+  // Calculate accuracy values — use per-topic accumulators to avoid the bug of
+  // assigning cumulative subject-level scores to individual topics.
   for (const subjectSlug in bySubject) {
     let subjectScore = 0
     let subjectMax = 0
+    // Track per-topic score/max separately
+    const topicScores: Record<string, { score: number; max: number }> = {}
 
     for (const attempt of attempts) {
       const question = attempt.questions as unknown as {
@@ -106,19 +109,25 @@ export async function getProgress(userId: string, subjectId?: string): Promise<P
       }
       if (question?.subjects?.slug !== subjectSlug) continue
 
-      subjectScore += attempt.score ?? 0
-      subjectMax += attempt.max_score ?? 0
+      const attemptScore = attempt.score ?? 0
+      const attemptMax = attempt.max_score ?? 0
+      subjectScore += attemptScore
+      subjectMax += attemptMax
 
       const topicName = question?.topics?.name || 'Unknown Topic'
-      if (!bySubject[subjectSlug].by_topic[topicName]) continue
-
-      bySubject[subjectSlug].by_topic[topicName].accuracy =
-        subjectMax > 0 ? (subjectScore / subjectMax) * 100 : 0
+      if (!topicScores[topicName]) {
+        topicScores[topicName] = { score: 0, max: 0 }
+      }
+      topicScores[topicName].score += attemptScore
+      topicScores[topicName].max += attemptMax
     }
 
     bySubject[subjectSlug].accuracy = subjectMax > 0 ? (subjectScore / subjectMax) * 100 : 0
 
     for (const topicName in bySubject[subjectSlug].by_topic) {
+      const ts = topicScores[topicName]
+      const topicAccuracy = ts && ts.max > 0 ? (ts.score / ts.max) * 100 : 0
+      bySubject[subjectSlug].by_topic[topicName].accuracy = topicAccuracy
       const topic = bySubject[subjectSlug].by_topic[topicName]
       topic.is_weak = topic.accuracy < 60
       if (topic.is_weak && !weakTopics.includes(topicName)) {

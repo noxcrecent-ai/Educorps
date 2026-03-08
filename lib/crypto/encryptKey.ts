@@ -1,10 +1,15 @@
 import crypto from 'crypto'
 
 const ALGORITHM = 'aes-256-cbc'
-const SECRET = process.env.GROQ_ENCRYPTION_SECRET!
 
-if (SECRET && Buffer.byteLength(SECRET, 'utf8') !== 32) {
-  throw new Error('GROQ_ENCRYPTION_SECRET must be exactly 32 bytes for AES-256-CBC')
+/** Returns the encryption secret, read at call time so tests can set process.env before calling. */
+function getSecret(): string {
+  const secret = process.env.GROQ_ENCRYPTION_SECRET
+  if (!secret) throw new Error('GROQ_ENCRYPTION_SECRET is not set')
+  if (Buffer.byteLength(secret, 'utf8') !== 32) {
+    throw new Error('GROQ_ENCRYPTION_SECRET must be exactly 32 bytes for AES-256-CBC')
+  }
+  return secret
 }
 
 /**
@@ -13,6 +18,7 @@ if (SECRET && Buffer.byteLength(SECRET, 'utf8') !== 32) {
  * @returns Hex-encoded IV and encrypted text separated by ':'
  */
 export function encryptKey(plaintext: string): string {
+  const SECRET = getSecret()
   const iv = crypto.randomBytes(16)
   const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(SECRET), iv)
   const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final()])
@@ -25,6 +31,7 @@ export function encryptKey(plaintext: string): string {
  * @returns The plaintext API key
  */
 export function decryptKey(encrypted: string): string {
+  const SECRET = getSecret()
   const [ivHex, encryptedHex] = encrypted.split(':')
   const iv = Buffer.from(ivHex, 'hex')
   const encryptedText = Buffer.from(encryptedHex, 'hex')

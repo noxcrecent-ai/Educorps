@@ -107,7 +107,8 @@ Student Answer: ${userAnswer}`
   let feedback: GradingResult
   try {
     feedback = JSON.parse(responseText)
-  } catch {
+  } catch (parseError) {
+    console.error('[gradeAnswer] Failed to parse Groq response as JSON:', parseError, 'Raw response:', responseText)
     feedback = {
       score: 0,
       max_score: question.marks_available || 0,

@@ -1,7 +1,7 @@
-import { encryptKey, decryptKey } from '@/lib/crypto/encryptKey'
-
-// Set test encryption secret (32 chars)
+// Set test encryption secret (32 chars) BEFORE importing the module
 process.env.GROQ_ENCRYPTION_SECRET = 'ed7f2a9b4c1e8d3f6a0b5c2e9d4f7a1b'
+
+import { encryptKey, decryptKey } from '@/lib/crypto/encryptKey'
 
 describe('encryptKey / decryptKey', () => {
   it('round-trips a plaintext key', () => {
