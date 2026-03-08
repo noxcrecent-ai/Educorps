@@ -6,63 +6,337 @@
 <title>Eco.gpt — Economics Revision Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Dancing+Script:wght@600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-
-
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 
 /* ══ THEMES ══ */
-[data-theme="dark"] {
-  --bg:         #000000;
-  --fg:         #ffffff;
-  --grey:       #aaaaaa;
-  --border:     rgba(255,255,255,.22);
-  --card-bg:    rgba(255,255,255,.05);
-  --card-hover: rgba(255,255,255,.10);
-  --accent:     #ffffff;
+[data-theme="dark"]{
+  --bg:#000000;--fg:#ffffff;--grey:#aaaaaa;
+  --border:rgba(255,255,255,.22);
+  --card-bg:rgba(255,255,255,.05);
+  --card-hover:rgba(255,255,255,.10);
+  --accent:#ffffff;
 }
-[data-theme="light"] {
-  --bg:         #f8feff;
-  --fg:         #080e18;
-  --grey:       #4a6070;
-  --border:     rgba(0,150,200,.18);
-  --card-bg:    rgba(255,255,255,.72);
-  --card-hover: rgba(220,245,255,.92);
-  --accent:     #00b4d8;
+[data-theme="light"]{
+  --bg:#f8feff;--fg:#080e18;--grey:#4a6070;
+  --border:rgba(0,150,200,.18);
+  --card-bg:rgba(255,255,255,.72);
+  --card-hover:rgba(220,245,255,.92);
+  --accent:#00b4d8;
 }
 
-/* ══ TYPOGRAPHY MODES ══ */
-/* DARK = Barlow bold. LIGHT = Caveat cursive only */
-[data-theme="dark"] body { font-family:'Barlow', sans-serif; font-weight:600; letter-spacing:.02em; }
-[data-theme="light"] body { font-family:'Caveat', cursive; font-weight:600; }
+/* ══ TYPOGRAPHY ══ */
+[data-theme="dark"] body{font-family:'Barlow',sans-serif;font-weight:600;letter-spacing:.02em;}
+[data-theme="light"] body{font-family:'Caveat',cursive;font-weight:600;}
+[data-theme="dark"] h1,[data-theme="dark"] h2{font-family:'Bebas Neue',sans-serif;letter-spacing:.08em;}
 
-html {
-  font-size: clamp(14px, 1.1vw, 17px);
+html{font-size:clamp(14px,1.1vw,17px);}
+html,body{width:100%;min-height:100%;background:var(--bg);color:var(--fg);overflow-x:hidden;overflow-y:auto;cursor:none;transition:background .5s,color .5s;}
+
+/* ══ CANVAS BG ══ */
+#bg-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* CSS blob fallback for no-webgl */
+.no-webgl #bg-canvas{display:none;}
+.no-webgl body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 20% 30%,rgba(0,180,216,.18),transparent 60%),
+             radial-gradient(ellipse 60% 80% at 80% 70%,rgba(144,0,255,.12),transparent 60%);
+  animation:blobmove 8s ease-in-out infinite alternate;
 }
-html, body {
-  width:100%; min-height:100%;
-  background:var(--bg);
-  color:var(--fg);
-  overflow-x:hidden;
-  overflow-y:auto;
-  cursor:none;
-  transition:background .5s, color .5s;
+@keyframes blobmove{0%{transform:scale(1) translate(0,0);}100%{transform:scale(1.1) translate(2%,-3%);}}
+
+/* ══ CUSTOM CURSOR ══ */
+#cursor{position:fixed;width:16px;height:16px;border:2px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transition:background .2s,border-color .5s;mix-blend-mode:difference;}
+#cursor-trail{position:fixed;width:8px;height:8px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9998;opacity:.5;mix-blend-mode:difference;}
+@media(pointer:coarse){#cursor,#cursor-trail{display:none;}html,body{cursor:auto;}}
+
+/* ══ THEME BUTTON ══ */
+#theme-btn{position:fixed;top:1rem;right:1rem;z-index:1000;background:var(--card-bg);border:1px solid var(--border);border-radius:50%;width:2.4rem;height:2.4rem;display:flex;align-items:center;justify-content:center;cursor:none;transition:background .3s,border-color .3s;}
+#theme-btn:hover{background:var(--card-hover);}
+#theme-btn svg{width:1.1rem;height:1.1rem;stroke:var(--fg);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ══ LOADING OVERLAY ══ */
+#loading{position:fixed;inset:0;background:var(--bg);z-index:5000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;}
+#loading h2{font-size:1.4rem;opacity:.8;}
+.loading-bar-wrap{width:260px;height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.loading-bar{height:100%;width:0%;background:var(--accent);border-radius:4px;animation:loadanim 1.8s ease-in-out infinite;}
+@keyframes loadanim{0%{width:0%;margin-left:0;}50%{width:70%;}100%{width:0%;margin-left:100%}}
+
+/* ══ TOAST ══ */
+#toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:6000;display:flex;flex-direction:column;gap:.5rem;}
+.toast{padding:.65rem 1.1rem;border-radius:8px;font-size:.88rem;background:var(--card-bg);border:1px solid var(--border);backdrop-filter:blur(12px);opacity:0;transform:translateX(20px);transition:opacity .3s,transform .3s;pointer-events:none;max-width:260px;}
+.toast.show{opacity:1;transform:translateX(0);}
+.toast-error{border-color:rgba(255,80,80,.5);color:#ff6666;}
+.toast-success{border-color:rgba(0,220,120,.4);color:#0c9;}
+
+/* ══ PAGE SYSTEM ══ */
+.page{display:none;position:relative;z-index:1;min-height:100vh;}
+.page.active{display:flex;flex-direction:column;}
+
+/* ══ SHARED COMPONENTS ══ */
+.btn-primary{background:var(--fg);color:var(--bg);border:none;border-radius:8px;padding:.65rem 1.4rem;font-family:inherit;font-size:.95rem;font-weight:700;cursor:none;transition:opacity .2s,transform .15s;}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px);}
+.btn-secondary{background:transparent;color:var(--fg);border:1px solid var(--border);border-radius:8px;padding:.65rem 1.4rem;font-family:inherit;font-size:.95rem;cursor:none;transition:background .2s,border-color .2s;}
+.btn-secondary:hover{background:var(--card-hover);border-color:var(--accent);}
+.btn-ghost{background:transparent;color:var(--grey);border:none;font-family:inherit;font-size:.9rem;cursor:none;text-decoration:underline;padding:0;}
+.back-btn{background:transparent;color:var(--grey);border:1px solid var(--border);border-radius:6px;padding:.35rem .8rem;font-family:inherit;font-size:.85rem;cursor:none;transition:border-color .2s,color .2s;}
+.back-btn:hover{border-color:var(--accent);color:var(--fg);}
+.page-header{display:flex;align-items:center;gap:1rem;padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--card-bg);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;}
+.page-header h1{font-size:1.6rem;}
+
+/* ══ AUTH PAGES ══ */
+.auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.auth-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:420px;backdrop-filter:blur(16px);display:flex;flex-direction:column;gap:1.2rem;}
+.auth-card h1{font-size:2rem;text-align:center;}
+.auth-card p{color:var(--grey);font-size:.9rem;text-align:center;}
+.form-group{display:flex;flex-direction:column;gap:.4rem;}
+.form-group label{font-size:.85rem;color:var(--grey);}
+.form-group input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;color:var(--fg);font-family:inherit;font-size:.95rem;outline:none;transition:border-color .2s;}
+.form-group input:focus{border-color:var(--accent);}
+.auth-divider{display:flex;align-items:center;gap:.8rem;color:var(--grey);font-size:.8rem;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.auth-footer{text-align:center;font-size:.88rem;color:var(--grey);}
+.auth-footer a{color:var(--fg);cursor:none;}
+
+/* ══ API KEY PAGE ══ */
+.api-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.api-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:500px;backdrop-filter:blur(16px);display:flex;flex-direction:column;gap:1.2rem;}
+.api-card h1{font-size:1.8rem;}
+.api-steps{display:flex;flex-direction:column;gap:.7rem;margin:.5rem 0;}
+.api-step{display:flex;gap:.8rem;align-items:flex-start;font-size:.9rem;}
+.step-num{min-width:1.6rem;height:1.6rem;background:var(--card-hover);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;}
+.api-key-row{display:flex;gap:.6rem;}
+.api-key-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;color:var(--fg);font-family:inherit;font-size:.9rem;outline:none;}
+.api-key-row input:focus{border-color:var(--accent);}
+.api-actions{display:flex;gap:.6rem;flex-wrap:wrap;}
+
+/* ══ HOME PAGE ══ */
+.home-wrap{flex:1;display:flex;flex-direction:column;padding:2rem;gap:2rem;max-width:900px;margin:0 auto;width:100%;}
+.home-greeting{font-size:2.2rem;}
+.home-nav-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+.nav-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:1.6rem 1.2rem;cursor:none;transition:background .2s,border-color .2s,transform .2s;display:flex;flex-direction:column;gap:.6rem;text-align:center;}
+.nav-card:hover{background:var(--card-hover);border-color:var(--accent);transform:translateY(-3px);}
+.nav-card-icon{font-size:2rem;}
+.nav-card-title{font-size:1.05rem;font-weight:800;}
+.nav-card-sub{font-size:.82rem;color:var(--grey);}
+.quickmark-pill{align-self:center;background:var(--card-hover);border:1px solid var(--accent);border-radius:30px;padding:.5rem 1.4rem;cursor:none;font-family:inherit;font-size:.9rem;color:var(--fg);transition:background .2s,transform .2s;}
+.quickmark-pill:hover{background:var(--accent);color:var(--bg);transform:scale(1.03);}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;}
+.stat-box{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:.9rem .7rem;text-align:center;}
+.stat-val{font-size:1.5rem;font-weight:800;}
+.stat-label{font-size:.75rem;color:var(--grey);margin-top:.2rem;}
+.home-chart-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1rem;}
+.home-chart-wrap h3{font-size:.95rem;margin-bottom:.8rem;color:var(--grey);}
+#home-chart{width:100%;height:140px;display:block;}
+
+/* ══ NOTES PAGE ══ */
+.notes-layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 4rem);}
+.notes-sidebar-left{width:260px;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.notes-search{padding:.8rem;border-bottom:1px solid var(--border);}
+.notes-search input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem;color:var(--fg);font-family:inherit;font-size:.9rem;outline:none;}
+.notes-search input:focus{border-color:var(--accent);}
+#notes-list{flex:1;overflow-y:auto;padding:.5rem;}
+.note-item{padding:.7rem .8rem;border-radius:8px;border-left:3px solid transparent;cursor:none;transition:background .2s;margin-bottom:.3rem;}
+.note-item:hover{background:var(--card-hover);}
+.note-subject{font-size:.72rem;font-weight:800;margin-bottom:.2rem;}
+.note-title{font-size:.9rem;}
+.notes-viewer{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;}
+#note-viewer-title{font-size:1.6rem;}
+#note-viewer-content{line-height:1.8;font-size:.95rem;color:var(--grey);white-space:pre-wrap;}
+.notes-sidebar-right{width:220px;border-left:1px solid var(--border);padding:1rem;display:flex;flex-direction:column;gap:1rem;flex-shrink:0;}
+.notes-sidebar-right h3{font-size:.85rem;color:var(--grey);text-transform:uppercase;letter-spacing:.06em;}
+#recent-notes{display:flex;flex-direction:column;gap:.3rem;}
+.recent-note-item{font-size:.85rem;padding:.4rem .6rem;border-radius:6px;cursor:none;transition:background .2s;}
+.recent-note-item:hover{background:var(--card-hover);}
+.ai-panel{display:flex;flex-direction:column;gap:.5rem;}
+.ai-chat{flex:1;min-height:100px;max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;}
+.ai-msg{padding:.5rem .7rem;border-radius:8px;font-size:.82rem;line-height:1.5;}
+.ai-msg.user{background:var(--card-hover);align-self:flex-end;text-align:right;max-width:85%;}
+.ai-msg.ai{background:rgba(0,180,216,.1);border:1px solid rgba(0,180,216,.2);align-self:flex-start;max-width:90%;}
+.ai-input-row{display:flex;gap:.4rem;}
+.ai-input-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;color:var(--fg);font-family:inherit;font-size:.82rem;outline:none;}
+.ai-input-row button{background:var(--fg);color:var(--bg);border:none;border-radius:6px;padding:.4rem .7rem;font-family:inherit;font-size:.8rem;cursor:none;}
+
+/* ══ TOPICS PAGE ══ */
+.topics-layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 4rem);}
+.topics-sidebar{width:200px;border-right:1px solid var(--border);padding:1rem;display:flex;flex-direction:column;gap:.8rem;flex-shrink:0;}
+.topics-sidebar h3{font-size:.85rem;color:var(--grey);text-transform:uppercase;}
+.diff-btn{background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:.35rem .8rem;cursor:none;font-family:inherit;font-size:.82rem;text-align:left;color:var(--fg);transition:background .2s,border-color .2s;}
+.diff-btn.active,.diff-btn:hover{background:var(--card-hover);border-color:var(--accent);}
+.topics-main{flex:1;overflow-y:auto;padding:1rem;}
+#topics-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+.topic-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.1rem;cursor:none;transition:background .2s,border-color .2s,transform .2s;}
+.topic-card:hover{background:var(--card-hover);border-color:var(--accent);transform:translateY(-2px);}
+.topic-name{font-size:1rem;font-weight:800;margin-bottom:.5rem;}
+.topic-meta{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--grey);}
+.diff-badge{padding:.15rem .5rem;border-radius:10px;font-size:.72rem;font-weight:700;}
+.diff-easy{background:rgba(0,200,100,.15);color:#0c6;}
+.diff-medium{background:rgba(255,160,0,.15);color:#fa0;}
+.diff-hard{background:rgba(255,60,60,.15);color:#f44;}
+.topics-ai{width:240px;border-left:1px solid var(--border);padding:1rem;display:flex;flex-direction:column;gap:.8rem;flex-shrink:0;}
+
+/* ══ PAPERS PAGE (card grid) ══ */
+.papers-layout{display:flex;gap:1.5rem;padding:1.5rem;flex:1;overflow:hidden;}
+.papers-sidebar{width:160px;flex-shrink:0;display:flex;flex-direction:column;gap:.8rem;}
+.papers-sidebar h3{font-size:.85rem;color:var(--grey);text-transform:uppercase;letter-spacing:.05em;}
+.year-pills{display:flex;flex-direction:column;gap:.4rem;}
+.year-pill{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:.3rem .8rem;cursor:none;text-align:center;font-size:.82rem;transition:background .2s,border-color .2s;font-family:inherit;color:var(--fg);}
+.year-pill.active,.year-pill:hover{background:var(--card-hover);border-color:var(--accent);}
+.papers-grid-area{flex:1;overflow-y:auto;}
+#papers-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;}
+.paper-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.2rem;cursor:none;transition:background .2s,border-color .2s,transform .2s;}
+.paper-card:hover{background:var(--card-hover);border-color:var(--accent);transform:translateY(-3px);}
+.paper-card-top{display:flex;justify-content:space-between;margin-bottom:.6rem;}
+.year-badge{background:var(--accent);color:var(--bg);padding:.18rem .55rem;border-radius:6px;font-size:.78rem;font-weight:800;}
+.board-badge{background:var(--card-hover);color:var(--fg);border:1px solid var(--border);padding:.18rem .55rem;border-radius:6px;font-size:.78rem;}
+.paper-title{font-size:.98rem;font-weight:800;margin-bottom:.8rem;}
+.paper-card-meta{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;}
+.marks-pill{background:rgba(0,200,100,.12);color:#0c6;border:1px solid rgba(0,200,100,.28);padding:.15rem .5rem;border-radius:20px;font-size:.75rem;}
+.duration{color:var(--grey);font-size:.8rem;}
+
+/* ══ SPLIT EXAM PAGE ══ */
+#pg-papers-exam{display:none;flex-direction:column;}
+#pg-papers-exam.active{display:flex;}
+.split-exam-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.2rem;border-bottom:1px solid var(--border);background:var(--card-bg);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;flex-wrap:wrap;gap:.5rem;}
+.split-title{font-size:1rem;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.split-timer-area{display:flex;align-items:center;gap:.5rem;}
+#split-timer{font-family:'Barlow',sans-serif;font-size:1.15rem;font-weight:800;letter-spacing:.05em;}
+#split-pause-btn{background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:.25rem .55rem;font-size:.9rem;cursor:none;color:var(--fg);font-family:inherit;transition:background .2s;}
+#split-pause-btn:hover{background:var(--card-hover);}
+.split-exam-body{display:flex;flex:1;overflow:hidden;height:calc(100vh - 4rem);}
+.split-left{width:50%;border-right:1px solid var(--border);overflow-y:auto;padding:1rem;}
+.split-right{width:50%;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.8rem;}
+.split-question-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.8rem;}
+.sq-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;}
+.sq-num{font-weight:800;font-size:1rem;}
+.sq-marks{color:var(--grey);font-size:.83rem;}
+.sq-text{line-height:1.7;font-size:.93rem;}
+.split-answer-box{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.sa-header{display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;cursor:none;font-weight:700;font-size:.9rem;transition:background .2s;user-select:none;}
+.sa-header:hover{background:var(--card-hover);}
+.sa-toggle{font-size:.8rem;color:var(--grey);}
+.sa-body{padding:.8rem 1rem;border-top:1px solid var(--border);}
+.sa-body.collapsed{display:none;}
+.answer-tabs{display:flex;gap:.4rem;margin-bottom:.7rem;}
+.ans-tab{background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:.22rem .65rem;cursor:none;font-size:.78rem;font-family:inherit;color:var(--fg);transition:background .2s,border-color .2s;}
+.ans-tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.sa-body textarea{width:100%;min-height:110px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.55rem .7rem;color:var(--fg);font-family:inherit;font-size:.88rem;resize:vertical;outline:none;transition:border-color .2s;}
+.sa-body textarea:focus{border-color:var(--accent);}
+.upload-label{display:inline-flex;align-items:center;gap:.5rem;background:var(--card-hover);border:1px dashed var(--border);border-radius:8px;padding:.55rem 1rem;cursor:none;font-size:.85rem;}
+.upload-label input[type=file]{display:none;}
+.upload-name{font-size:.78rem;color:var(--grey);margin-top:.4rem;display:block;}
+.submit-all-btn{margin:.5rem;align-self:stretch;}
+.split-mobile-tabs{display:none;}
+
+/* ══ EXAM PAGE (topic questions, one-at-a-time) ══ */
+.exam-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.2rem;border-bottom:1px solid var(--border);background:var(--card-bg);position:sticky;top:0;z-index:10;}
+.exam-meta{display:flex;align-items:center;gap:1rem;}
+.exam-title-text{font-size:1rem;font-weight:800;}
+#exam-timer{font-family:'Barlow',sans-serif;font-size:1rem;font-weight:700;}
+.exam-body{flex:1;display:flex;flex-direction:column;padding:1.5rem;gap:1.2rem;max-width:780px;margin:0 auto;width:100%;}
+.exam-dots-row{display:flex;gap:.4rem;flex-wrap:wrap;}
+.exam-dot{width:2rem;height:2rem;border-radius:50%;background:var(--card-bg);border:1px solid var(--border);font-size:.78rem;cursor:none;color:var(--fg);font-family:inherit;transition:background .2s,border-color .2s;}
+.exam-dot.active{background:var(--fg);color:var(--bg);}
+.exam-dot.answered{border-color:var(--accent);}
+.exam-q-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.3rem;}
+.exam-q-num-row{display:flex;justify-content:space-between;margin-bottom:.8rem;}
+.exam-q-num{font-weight:800;}
+.exam-q-marks-label{color:var(--grey);font-size:.85rem;}
+.exam-q-text{font-size:1rem;line-height:1.7;}
+.exam-answer-tabs{display:flex;gap:.5rem;margin:.8rem 0 .5rem;}
+.exam-answer-body textarea{width:100%;min-height:140px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .8rem;color:var(--fg);font-family:inherit;font-size:.9rem;resize:vertical;outline:none;}
+.exam-answer-body textarea:focus{border-color:var(--accent);}
+.exam-answer-upload{display:none;}
+.exam-bottom-row{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:space-between;}
+.exam-nav{display:flex;gap:.5rem;}
+
+/* ══ QUICKMARK PAGE ══ */
+.qm-wrap{flex:1;padding:1.5rem;max-width:720px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1.2rem;}
+.qm-wrap h2{font-size:1.5rem;}
+.qm-field{display:flex;flex-direction:column;gap:.4rem;}
+.qm-field label{font-size:.85rem;color:var(--grey);}
+.qm-field textarea{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .8rem;color:var(--fg);font-family:inherit;font-size:.9rem;resize:vertical;outline:none;min-height:100px;}
+.qm-field textarea:focus{border-color:var(--accent);}
+.qm-upload-area{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;}
+#qm-result{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;flex-direction:column;gap:.7rem;}
+.qm-score-hero{font-size:2.5rem;font-weight:800;}
+#qm-feedback{line-height:1.7;color:var(--grey);}
+
+/* ══ RESULTS PAGE ══ */
+.results-wrap{flex:1;padding:1.5rem;max-width:860px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1.5rem;}
+.results-hero{text-align:center;padding:1.5rem;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;}
+#result-score-hero{font-size:3.5rem;font-weight:900;line-height:1;}
+.result-pct-row{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:.7rem;}
+#result-pct{font-size:1.4rem;}
+#result-grade{font-size:1.4rem;background:var(--card-hover);padding:.2rem .8rem;border-radius:8px;}
+#result-time{font-size:1rem;color:var(--grey);}
+.results-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;}
+.result-stat{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:.9rem;text-align:center;}
+.result-stat-val{font-size:1.4rem;font-weight:800;}
+.result-stat-label{font-size:.75rem;color:var(--grey);margin-top:.2rem;}
+.results-charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.chart-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1rem;}
+.chart-card h4{font-size:.85rem;color:var(--grey);margin-bottom:.7rem;}
+.chart-card canvas{width:100%;height:120px;display:block;}
+#results-feedback{display:flex;flex-direction:column;gap:.8rem;}
+.result-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;}
+.result-good{border-left:3px solid #0c6;}
+.result-poor{border-left:3px solid #f55;}
+.result-card-header{display:flex;justify-content:space-between;font-weight:800;margin-bottom:.5rem;}
+.result-q{font-size:.88rem;margin-bottom:.4rem;}
+.result-ans{font-size:.82rem;color:var(--grey);margin-bottom:.4rem;}
+.result-fb{font-size:.85rem;font-style:italic;}
+.results-actions{display:flex;gap:.8rem;justify-content:center;padding-bottom:2rem;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:1023px){
+  .notes-sidebar-right,.topics-ai{display:none;}
 }
-
-/* Additional styles omitted for brevity */
-
+@media(max-width:768px){
+  .split-exam-body{height:auto;}
+  .split-left,.split-right{width:100%;border-right:none;}
+  .split-exam-body .split-left[data-hidden="true"],.split-exam-body .split-right[data-hidden="true"]{display:none;}
+  .split-mobile-tabs{display:flex;position:sticky;bottom:0;background:var(--card-bg);border-top:1px solid var(--border);z-index:10;}
+  .split-tab{flex:1;padding:.65rem;text-align:center;border:none;background:transparent;color:var(--fg);cursor:none;font-family:inherit;font-size:.9rem;}
+  .split-tab.active{color:var(--accent);border-top:2px solid var(--accent);}
+}
+@media(max-width:640px){
+  .home-nav-cards{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .papers-layout{flex-direction:column;padding:1rem;gap:1rem;overflow:visible;}
+  .papers-sidebar{width:100%;}
+  .year-pills{flex-direction:row;flex-wrap:wrap;}
+  #papers-grid{grid-template-columns:1fr;}
+  #topics-grid{grid-template-columns:1fr;}
+  .topics-layout{flex-direction:column;}
+  .topics-sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);flex-direction:row;flex-wrap:wrap;gap:.4rem;padding:.7rem;}
+  .notes-layout{flex-direction:column;}
+  .notes-sidebar-left{width:100%;height:200px;}
+  .results-charts{grid-template-columns:1fr;}
+  .results-stats{grid-template-columns:repeat(2,1fr);}
+  .split-exam-body{flex-direction:column;}
+}
+@media(max-width:400px){
+  .auth-card{padding:1.6rem 1.2rem;}
+  .home-greeting{font-size:1.6rem;}
+}
+@media(orientation:landscape) and (max-height:500px){
+  .split-exam-body{height:auto;}
+}
 </style>
 </head>
 <body>
 
-<!-- ══ BG CANVAS ══ -->
+<!-- ══ CANVAS BG ══ -->
 <canvas id="bg-canvas"></canvas>
 <div id="cursor"></div>
 <div id="cursor-trail"></div>
 
-<!-- Theme toggle -->
+<!-- ══ THEME TOGGLE ══ -->
 <button id="theme-btn" onclick="toggleTheme()" title="Toggle theme">
   <svg viewBox="0 0 24 24" id="theme-icon-dark">
-    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
     <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
@@ -72,7 +346,1162 @@ html, body {
   </svg>
 </button>
 
-<!-- Landing page content omitted for brevity -->
+<!-- ══ LOADING OVERLAY ══ -->
+<div id="loading">
+  <h2>Analysing your answers…</h2>
+  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+</div>
 
+<!-- ══ TOAST CONTAINER ══ -->
+<div id="toast-container"></div>
+
+<!-- ════════════════════════════════════════
+     PAGE: LOGIN
+     ════════════════════════════════════════ -->
+<div id="pg-login" class="page active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Eco.gpt</h1>
+      <p>Your AI-powered Economics revision platform</p>
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label for="login-pass">Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Login</button>
+      <div class="auth-divider">or</div>
+      <button class="btn-secondary" onclick="doGuest()">Continue as Guest</button>
+      <p class="auth-footer">No account? <a href="#" onclick="showPage('pg-register')">Register here</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: REGISTER
+     ════════════════════════════════════════ -->
+<div id="pg-register" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Create Account</h1>
+      <p>Join Eco.gpt to track your progress</p>
+      <div class="form-group">
+        <label for="reg-name">Full Name</label>
+        <input type="text" id="reg-name" placeholder="Alex Smith">
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label for="reg-pass">Password</label>
+        <input type="password" id="reg-pass" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="doRegister()">Create Account</button>
+      <p class="auth-footer">Already have an account? <a href="#" onclick="showPage('pg-login')">Login</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: API KEY SETUP
+     ════════════════════════════════════════ -->
+<div id="pg-api" class="page">
+  <div class="api-wrap">
+    <div class="api-card">
+      <h1>Set up AI</h1>
+      <p style="color:var(--grey);font-size:.9rem;">Add a Groq API key to unlock AI-powered feedback (free tier available).</p>
+      <div class="api-steps">
+        <div class="api-step"><span class="step-num">1</span><span>Go to <strong>console.groq.com</strong> and create a free account.</span></div>
+        <div class="api-step"><span class="step-num">2</span><span>Navigate to <strong>API Keys</strong> in the sidebar.</span></div>
+        <div class="api-step"><span class="step-num">3</span><span>Click <strong>Create API Key</strong>, copy it, and paste below.</span></div>
+      </div>
+      <div class="api-key-row">
+        <input type="password" id="api-key-input" placeholder="gsk_••••••••••••••••••••••">
+        <button class="btn-secondary" onclick="clearApiKey()">Clear</button>
+      </div>
+      <div class="api-actions">
+        <button class="btn-primary" onclick="saveApiKey()">Save Key</button>
+        <button class="btn-secondary" onclick="skipApiKey()">Skip for now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: HOME
+     ════════════════════════════════════════ -->
+<div id="pg-home" class="page">
+  <div class="home-wrap">
+    <div id="home-greeting" class="home-greeting">Hello! 👋</div>
+    <div class="home-nav-cards">
+      <div class="nav-card" onclick="showPage('pg-notes')">
+        <div class="nav-card-icon">📚</div>
+        <div class="nav-card-title">Notes</div>
+        <div class="nav-card-sub">Browse topic summaries</div>
+      </div>
+      <div class="nav-card" onclick="showPage('pg-topics')">
+        <div class="nav-card-icon">✏️</div>
+        <div class="nav-card-title">Topic Questions</div>
+        <div class="nav-card-sub">Practice by topic</div>
+      </div>
+      <div class="nav-card" onclick="showPage('pg-papers')">
+        <div class="nav-card-icon">📄</div>
+        <div class="nav-card-title">Past Papers</div>
+        <div class="nav-card-sub">Full exam experience</div>
+      </div>
+    </div>
+    <button class="quickmark-pill" onclick="showPage('pg-quickmark')">⚡ QuickMark — instant answer feedback</button>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val" id="stat-papers">0</div><div class="stat-label">Papers Done</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-marks">0</div><div class="stat-label">Total Marks</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-avg">0%</div><div class="stat-label">Avg Score</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-streak">0d</div><div class="stat-label">Day Streak</div></div>
+    </div>
+    <div class="home-chart-wrap">
+      <h3>Score Progress</h3>
+      <canvas id="home-chart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: NOTES
+     ════════════════════════════════════════ -->
+<div id="pg-notes" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('pg-home')">← Back</button>
+    <h1>Notes</h1>
+  </div>
+  <div class="notes-layout">
+    <div class="notes-sidebar-left">
+      <div class="notes-search">
+        <input type="text" id="notes-search-input" placeholder="Search notes…" oninput="renderNotes(this.value)">
+      </div>
+      <div id="notes-list"></div>
+    </div>
+    <div class="notes-viewer">
+      <div id="note-viewer-title" style="color:var(--grey);font-size:1.1rem;">← Select a note</div>
+      <div id="note-viewer-content"></div>
+    </div>
+    <div class="notes-sidebar-right">
+      <h3>Recently Viewed</h3>
+      <div id="recent-notes"></div>
+      <h3 style="margin-top:.8rem;">AI Assistant</h3>
+      <div class="ai-panel">
+        <div class="ai-chat" id="ai-chat-notes"></div>
+        <div class="ai-input-row">
+          <input type="text" id="ai-input-notes" placeholder="Ask about this note…" onkeydown="if(event.key==='Enter')sendAiMessage('notes')">
+          <button onclick="sendAiMessage('notes')">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: TOPIC QUESTIONS
+     ════════════════════════════════════════ -->
+<div id="pg-topics" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('pg-home')">← Back</button>
+    <h1>Topic Questions</h1>
+  </div>
+  <div class="topics-layout">
+    <div class="topics-sidebar">
+      <h3>Difficulty</h3>
+      <button class="diff-btn active" data-diff="all" onclick="filterTopics('all')">All</button>
+      <button class="diff-btn" data-diff="easy" onclick="filterTopics('easy')">Easy</button>
+      <button class="diff-btn" data-diff="medium" onclick="filterTopics('medium')">Medium</button>
+      <button class="diff-btn" data-diff="hard" onclick="filterTopics('hard')">Hard</button>
+    </div>
+    <div class="topics-main">
+      <div id="topics-grid"></div>
+    </div>
+    <div class="topics-ai">
+      <h3 style="font-size:.85rem;color:var(--grey);text-transform:uppercase;">AI Assistant</h3>
+      <div class="ai-chat" id="ai-chat-topics"></div>
+      <div class="ai-input-row">
+        <input type="text" id="ai-input-topics" placeholder="Ask anything…" onkeydown="if(event.key==='Enter')sendAiMessage('topics')">
+        <button onclick="sendAiMessage('topics')">→</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: PAST PAPERS (card grid)
+     ════════════════════════════════════════ -->
+<div id="pg-papers" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('pg-home')">← Back</button>
+    <h1>Past Papers</h1>
+  </div>
+  <div class="papers-layout">
+    <aside class="papers-sidebar">
+      <h3>Filter by Year</h3>
+      <div id="year-filter-pills" class="year-pills"></div>
+    </aside>
+    <main class="papers-grid-area">
+      <div id="papers-grid"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: SPLIT-PANE PAPER EXAM
+     ════════════════════════════════════════ -->
+<div id="pg-papers-exam" class="page">
+  <div class="split-exam-header">
+    <button class="back-btn" onclick="leaveSplitExam()">← Papers</button>
+    <div id="split-paper-title" class="split-title">Paper</div>
+    <div class="split-timer-area">
+      <span id="split-timer">00:00</span>
+      <button id="split-pause-btn" onclick="toggleSplitTimer()">⏸</button>
+    </div>
+  </div>
+  <div class="split-exam-body">
+    <div class="split-left" id="split-questions-pane">
+      <div id="split-questions-list"></div>
+    </div>
+    <div class="split-right" id="split-answers-pane">
+      <div id="split-answers-list"></div>
+      <button class="btn-primary submit-all-btn" onclick="submitAllAndFeedback()">Submit All &amp; Get Results</button>
+    </div>
+  </div>
+  <div class="split-mobile-tabs">
+    <button class="split-tab active" onclick="showSplitPane('questions')">Questions</button>
+    <button class="split-tab" onclick="showSplitPane('answers')">Answers</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: EXAM (topic questions, one-at-a-time)
+     ════════════════════════════════════════ -->
+<div id="pg-exam" class="page">
+  <div class="exam-header">
+    <div class="exam-meta">
+      <button class="back-btn" onclick="leaveTopicExam()">← Topics</button>
+      <span id="exam-title" class="exam-title-text">Topic</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.8rem;">
+      <span style="font-size:.85rem;color:var(--grey);">Q<span id="exam-q-num">1</span>/<span id="exam-q-total">5</span></span>
+      <span id="exam-timer">00:00</span>
+    </div>
+  </div>
+  <div class="exam-body">
+    <div class="exam-dots-row" id="exam-dots"></div>
+    <div class="exam-q-card">
+      <div class="exam-q-num-row">
+        <span class="exam-q-num" id="exam-q-display">Question 1</span>
+        <span class="exam-q-marks-label" id="exam-q-marks">[8 marks]</span>
+      </div>
+      <p class="exam-q-text" id="exam-q-text">Question text here.</p>
+    </div>
+    <div>
+      <div class="exam-answer-tabs">
+        <button class="ans-tab active" id="etab-type" onclick="setExamTab('type')">Type</button>
+        <button class="ans-tab" id="etab-upload" onclick="setExamTab('upload')">Upload</button>
+        <button class="ans-tab" id="etab-both" onclick="setExamTab('both')">Both</button>
+      </div>
+      <div class="exam-answer-body">
+        <div id="exam-type-area">
+          <textarea id="exam-answer-text" placeholder="Type your answer here…"></textarea>
+        </div>
+        <div id="exam-upload-area" class="exam-answer-upload">
+          <label class="upload-label">
+            <input type="file" accept="image/*,.pdf" onchange="handleExamFile(this)">
+            <span>📎 Upload answer image / PDF</span>
+          </label>
+          <span id="exam-upload-name" class="upload-name"></span>
+        </div>
+      </div>
+    </div>
+    <div class="exam-bottom-row">
+      <div class="exam-nav">
+        <button class="btn-secondary" onclick="examNav(-1)">← Prev</button>
+        <button class="btn-secondary" onclick="examNav(1)">Next →</button>
+      </div>
+      <div style="display:flex;gap:.6rem;">
+        <button class="btn-secondary" onclick="saveExamAnswer()">Save Answer</button>
+        <button class="btn-primary" onclick="finishExam()">Finish &amp; Get Results</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: QUICKMARK
+     ════════════════════════════════════════ -->
+<div id="pg-quickmark" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('pg-home')">← Back</button>
+    <h1>QuickMark</h1>
+  </div>
+  <div class="qm-wrap">
+    <p style="color:var(--grey);">Paste a question and your answer for instant mock feedback.</p>
+    <div class="qm-field">
+      <label>Question</label>
+      <textarea id="qm-question" placeholder="Paste the question here…" rows="3"></textarea>
+    </div>
+    <div class="qm-upload-area">
+      <label class="upload-label">
+        <input type="file" accept="image/*,.pdf" onchange="handleQmFile(this)">
+        <span>📎 Upload answer image (optional)</span>
+      </label>
+      <span id="qm-upload-name" class="upload-name"></span>
+    </div>
+    <div class="qm-field">
+      <label>Your Written Answer</label>
+      <textarea id="qm-answer" placeholder="Type your answer here…" rows="5"></textarea>
+    </div>
+    <button class="btn-primary" style="align-self:flex-start;" onclick="doQuickMark()">Get Feedback ⚡</button>
+    <div id="qm-result" style="display:none;">
+      <div class="qm-score-hero" id="qm-score">0/10</div>
+      <p id="qm-feedback"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: RESULTS
+     ════════════════════════════════════════ -->
+<div id="pg-results" class="page">
+  <div class="page-header">
+    <h1>Results</h1>
+  </div>
+  <div class="results-wrap">
+    <div class="results-hero">
+      <div id="result-score-hero">0/0</div>
+      <div class="result-pct-row">
+        <span id="result-pct">0%</span>
+        <span id="result-grade">U</span>
+        <span id="result-time">0m 0s</span>
+      </div>
+    </div>
+    <div class="results-stats">
+      <div class="result-stat"><div class="result-stat-val" id="res-stat-correct">0</div><div class="result-stat-label">Questions ≥70%</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="res-stat-avg">0%</div><div class="result-stat-label">Average Score</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="res-stat-time">0m</div><div class="result-stat-label">Time Taken</div></div>
+    </div>
+    <div class="results-charts">
+      <div class="chart-card"><h4>Score per Question</h4><canvas id="chart-score"></canvas></div>
+      <div class="chart-card"><h4>Marks Distribution</h4><canvas id="chart-dist"></canvas></div>
+    </div>
+    <div id="results-feedback"></div>
+    <div class="results-actions">
+      <button class="btn-secondary" onclick="retryExam()">Retry</button>
+      <button class="btn-primary" onclick="showPage('pg-home')">← Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   DATA
+   ════════════════════════════════════ */
+const NOTES = [
+  {id:1,subject:'Macroeconomics',color:'#4a9eff',title:'Aggregate Demand & Supply',content:'Aggregate Demand (AD) is the total demand for goods and services in an economy at a given price level.\n\nComponents of AD: C + I + G + (X-M)\n\nConsumption (C) is influenced by income, wealth, interest rates, and consumer confidence.\n\nInvestment (I) depends on the rate of interest and business expectations.\n\nGovernment Spending (G) is determined by fiscal policy.\n\nNet Exports (X-M) are affected by exchange rates and foreign income.\n\nAggregate Supply (AS) is the total output firms are willing to produce at each price level. Short-run AS slopes upward; long-run AS is vertical at potential output.'},
+  {id:2,subject:'Microeconomics',color:'#4aff8c',title:'Price Elasticity of Demand',content:'Price Elasticity of Demand (PED) measures the responsiveness of quantity demanded to a change in price.\n\nPED = % change in Qd ÷ % change in Price\n\nIf |PED| > 1: elastic demand (luxury goods, many substitutes)\nIf |PED| < 1: inelastic demand (necessities, few substitutes)\nIf |PED| = 1: unit elastic\n\nDeterminants: availability of substitutes, necessity vs luxury, proportion of income, time period.\n\nRevenue implications: if demand is elastic, a price rise reduces total revenue; if inelastic, revenue increases.'},
+  {id:3,subject:'International Trade',color:'#ff9f4a',title:'Comparative Advantage',content:'Comparative advantage exists when a country can produce a good at a lower opportunity cost than another country.\n\nAbsolute advantage: producing more output with the same resources.\nComparative advantage: lower opportunity cost of production.\n\nEven if one country is absolutely better at producing everything, both countries benefit from specialisation and trade based on comparative advantage.\n\nLimitations: assumes no transport costs, perfect factor mobility, constant returns to scale, and ignores externalities.'},
+  {id:4,subject:'Market Failure',color:'#ff4a9f',title:'Externalities',content:'Externalities are costs or benefits that affect third parties not involved in the economic transaction.\n\nNegative externality: social cost > private cost (e.g. pollution from factories)\nPositive externality: social benefit > private benefit (e.g. education, vaccination)\n\nGovernment responses:\n- Taxes (Pigouvian taxes) for negative externalities\n- Subsidies for positive externalities\n- Regulation and legislation\n- Tradeable permits (cap-and-trade)\n\nMarket failure occurs when the market fails to allocate resources efficiently, leading to deadweight loss.'},
+  {id:5,subject:'Development Economics',color:'#c04aff',title:'Measures of Development',content:'Human Development Index (HDI) combines three dimensions:\n1. GDP per capita (PPP) — standard of living\n2. Life expectancy at birth — health\n3. Mean and expected years of schooling — education\n\nHDI ranges from 0 to 1. Above 0.8 is considered very high development.\n\nLimitations of HDI: ignores inequality, environmental sustainability, political freedom, and gender disparities.\n\nAlternative measures: Inequality-adjusted HDI (IHDI), Gender Development Index (GDI), Multidimensional Poverty Index (MPI).'},
+  {id:6,subject:'Macroeconomics',color:'#4a9eff',title:'Monetary Policy',content:'Monetary policy involves central bank tools to control money supply and interest rates to achieve macroeconomic objectives.\n\nTools: interest rate changes, quantitative easing (QE), forward guidance, reserve requirements.\n\nObjectives: price stability (inflation target ~2%), support for economic growth, employment.\n\nExpansionary monetary policy: lower interest rates → increase investment and consumption → higher AD.\n\nContractionary monetary policy: raise interest rates → reduce borrowing → lower inflationary pressure.\n\nLimitations: liquidity trap, time lags, global capital flows, inflation expectations.'},
+];
+
+const TOPICS = [
+  {id:1,name:'Aggregate Demand',questions:12,difficulty:'medium'},
+  {id:2,name:'Price Elasticity',questions:8,difficulty:'easy'},
+  {id:3,name:'Market Failure',questions:15,difficulty:'hard'},
+  {id:4,name:'Fiscal Policy',questions:10,difficulty:'medium'},
+  {id:5,name:'International Trade',questions:11,difficulty:'medium'},
+  {id:6,name:'Labour Markets',questions:9,difficulty:'hard'},
+  {id:7,name:'Monetary Policy',questions:7,difficulty:'easy'},
+  {id:8,name:'Economic Growth',questions:13,difficulty:'medium'},
+];
+
+const PAPERS = [
+  {id:1,year:2023,title:'AS Economics Paper 1',board:'P1',marks:60,duration:'1h 30min',questions:[
+    {n:1,text:'Explain two factors that could cause a shift in the aggregate demand curve.',marks:4},
+    {n:2,text:'Assess the view that a reduction in income tax is the most effective way to increase economic growth.',marks:15},
+    {n:3,text:'Explain the concept of price elasticity of supply and its determinants.',marks:6},
+    {n:4,text:'Evaluate the policies a government might use to reduce unemployment.',marks:15},
+    {n:5,text:'Explain two microeconomic market failures.',marks:4},
+    {n:6,text:'Assess the significance of income inequality within an economy.',marks:16},
+  ]},
+  {id:2,year:2023,title:'AS Economics Paper 2',board:'P2',marks:60,duration:'1h 30min',questions:[
+    {n:1,text:'Analyse the effects of a tariff on domestic consumers and producers.',marks:9},
+    {n:2,text:'Evaluate the benefits and costs of free trade for a developing economy.',marks:15},
+    {n:3,text:'Explain three factors that affect the exchange rate.',marks:6},
+    {n:4,text:'Assess the effectiveness of supply-side policies in reducing inflation.',marks:15},
+    {n:5,text:'Explain the difference between a current account deficit and surplus.',marks:5},
+    {n:6,text:'Evaluate whether a balance of payments deficit is always harmful.',marks:10},
+  ]},
+  {id:3,year:2022,title:'A-Level Economics Paper 1',board:'P1',marks:80,duration:'2h',questions:[
+    {n:1,text:'Explain the law of diminishing marginal returns with examples.',marks:5},
+    {n:2,text:'Assess the case for and against minimum wage legislation.',marks:20},
+    {n:3,text:'Explain the concept of economies and diseconomies of scale.',marks:5},
+    {n:4,text:'Evaluate the effectiveness of competition policy in promoting consumer welfare.',marks:20},
+    {n:5,text:'Explain price discrimination and the conditions required for it.',marks:10},
+    {n:6,text:'Evaluate the impact of monopoly on economic welfare compared to perfect competition.',marks:20},
+  ]},
+  {id:4,year:2022,title:'A-Level Economics Paper 2',board:'P2',marks:80,duration:'2h',questions:[
+    {n:1,text:'Explain the causes of the 2008 global financial crisis.',marks:8},
+    {n:2,text:'Assess the effectiveness of quantitative easing as a monetary policy tool.',marks:20},
+    {n:3,text:'Explain the relationship between inflation and unemployment (Phillips Curve).',marks:7},
+    {n:4,text:'Evaluate the supply-side economics approach to macroeconomic policy.',marks:20},
+    {n:5,text:'Explain the concept of absolute and comparative advantage.',marks:5},
+    {n:6,text:'Assess the impact of globalisation on developing economies.',marks:20},
+  ]},
+  {id:5,year:2021,title:'AS Economics Paper 1',board:'P1',marks:60,duration:'1h 30min',questions:[
+    {n:1,text:'Define opportunity cost and provide an economic example.',marks:3},
+    {n:2,text:'Explain the production possibility frontier and what shifts it.',marks:6},
+    {n:3,text:'Assess the impact of a government subsidy on a market.',marks:15},
+    {n:4,text:'Explain consumer surplus and producer surplus with a diagram.',marks:6},
+    {n:5,text:'Evaluate the costs and benefits of economic growth.',marks:15},
+    {n:6,text:'Assess whether price controls are always an effective policy.',marks:15},
+  ]},
+  {id:6,year:2021,title:'A-Level Economics Paper 3',board:'P3',marks:80,duration:'2h',questions:[
+    {n:1,text:'Analyse macroeconomic data for a given country and assess its economic performance over the last decade.',marks:20},
+    {n:2,text:'Evaluate policies a government could use to reduce a persistent current account deficit.',marks:20},
+    {n:3,text:'Assess the relationship between economic growth and environmental sustainability.',marks:20},
+    {n:4,text:"Evaluate the impact of foreign direct investment on developing economies' long-run growth prospects.",marks:20},
+  ]},
+];
+
+/* ════════════════════════════════════
+   STATE
+   ════════════════════════════════════ */
+const state = {
+  page:'pg-login',
+  user:null,
+  apiKey:null,
+  theme:'dark',
+  currentExam:null,
+  currentPaper:null,
+  examAnswers:{},
+  splitAnswers:{},
+  splitTimerInterval:null,
+  splitTimerSeconds:0,
+  splitTimerPaused:false,
+  examTimerInterval:null,
+  examTimerSeconds:0,
+  noteHistory:[],
+  selectedDifficulty:'all',
+  selectedYear:'all',
+  lastResults:null,
+  examHistory:JSON.parse(localStorage.getItem('examHistory')||'[]'),
+};
+
+/* ════════════════════════════════════
+   NAVIGATION
+   ════════════════════════════════════ */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+  state.page = id;
+  if(id!=='pg-papers-exam') stopSplitTimer();
+  if(id!=='pg-exam') stopExamTimer();
+  if(id==='pg-home') renderHome();
+  if(id==='pg-notes') renderNotes();
+  if(id==='pg-topics') renderTopics();
+  if(id==='pg-papers') renderPapers();
+}
+
+/* ════════════════════════════════════
+   THEME
+   ════════════════════════════════════ */
+function toggleTheme(){
+  const t = document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=t;
+  state.theme=t;
+  document.getElementById('theme-icon-dark').style.display=t==='dark'?'':'none';
+  document.getElementById('theme-icon-light').style.display=t==='light'?'':'none';
+  localStorage.setItem('theme',t);
+}
+
+/* ════════════════════════════════════
+   TOAST
+   ════════════════════════════════════ */
+function showToast(msg,type='info'){
+  const t=document.createElement('div');
+  t.className='toast toast-'+type;
+  t.textContent=msg;
+  document.getElementById('toast-container').appendChild(t);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),320);},3000);
+}
+
+/* ════════════════════════════════════
+   LOADING
+   ════════════════════════════════════ */
+function showLoading(){document.getElementById('loading').style.display='flex';}
+function hideLoading(){document.getElementById('loading').style.display='none';}
+
+/* ════════════════════════════════════
+   AUTH
+   ════════════════════════════════════ */
+function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showToast('Please fill in all fields','error');return;}
+  state.user={email,name:email.split('@')[0]};
+  localStorage.setItem('user',JSON.stringify(state.user));
+  showPage('pg-home');
+  showToast('Welcome back, '+state.user.name+'!','success');
+}
+function doGuest(){
+  state.user={email:'guest@eco.gpt',name:'Guest'};
+  showPage('pg-home');
+  showToast('Continuing as Guest');
+}
+function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  if(!name||!email||!pass){showToast('Please fill in all fields','error');return;}
+  state.user={email,name};
+  localStorage.setItem('user',JSON.stringify(state.user));
+  showPage('pg-api');
+  showToast('Account created!','success');
+}
+function saveApiKey(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(!key){showToast('Please enter an API key','error');return;}
+  state.apiKey=key;
+  localStorage.setItem('apiKey',key);
+  showPage('pg-home');
+  showToast('API Key saved!','success');
+}
+function skipApiKey(){showPage('pg-home');}
+function clearApiKey(){
+  state.apiKey=null;
+  localStorage.removeItem('apiKey');
+  document.getElementById('api-key-input').value='';
+  showToast('API Key cleared');
+}
+
+/* ════════════════════════════════════
+   HOME
+   ════════════════════════════════════ */
+function renderHome(){
+  if(state.user) document.getElementById('home-greeting').textContent='Hello, '+state.user.name+' 👋';
+  const h=state.examHistory;
+  document.getElementById('stat-papers').textContent=h.length;
+  document.getElementById('stat-marks').textContent=h.reduce((s,x)=>s+x.score,0);
+  const avgPct=h.length?Math.round(h.reduce((s,x)=>s+(x.score/x.max*100),0)/h.length):0;
+  document.getElementById('stat-avg').textContent=avgPct+'%';
+  document.getElementById('stat-streak').textContent=calcStreak(h)+'d';
+  drawHomeChart(h);
+}
+function calcStreak(history){
+  if(!history.length) return 0;
+  const dates=[...new Set(history.map(h=>h.date.substring(0,10)))].sort();
+  const today=new Date().toISOString().substring(0,10);
+  if(dates[dates.length-1]!==today) return 0;
+  let streak=1;
+  for(let i=dates.length-1;i>0;i--){
+    if((new Date(dates[i])-new Date(dates[i-1]))/86400000===1) streak++; else break;
+  }
+  return streak;
+}
+function drawHomeChart(history){
+  const canvas=document.getElementById('home-chart');
+  if(!canvas) return;
+  canvas.width=canvas.offsetWidth||600;
+  canvas.height=140;
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  if(!history.length){
+    ctx.fillStyle='var(--grey)';
+    ctx.font='13px Barlow,sans-serif';
+    ctx.fillText('Complete a paper to see your progress',20,h/2);
+    return;
+  }
+  const recent=history.slice(-10);
+  const barW=Math.floor((w-40)/recent.length)-4;
+  recent.forEach((item,i)=>{
+    const pct=item.score/item.max;
+    const barH=Math.floor(pct*(h-40));
+    const x=20+i*(barW+4);
+    const y=h-20-barH;
+    const grad=ctx.createLinearGradient(0,y,0,h-20);
+    grad.addColorStop(0,'rgba(0,180,216,.9)');
+    grad.addColorStop(1,'rgba(0,180,216,.2)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(x,y,barW,barH);
+  });
+}
+
+/* ════════════════════════════════════
+   NOTES
+   ════════════════════════════════════ */
+function renderNotes(filter){
+  const q=(filter||'').toLowerCase();
+  const notes=q?NOTES.filter(n=>n.title.toLowerCase().includes(q)||n.subject.toLowerCase().includes(q)):NOTES;
+  document.getElementById('notes-list').innerHTML=notes.map(n=>`
+    <div class="note-item" style="border-left-color:${n.color}" onclick="viewNote(${n.id})">
+      <div class="note-subject" style="color:${n.color}">${n.subject}</div>
+      <div class="note-title">${n.title}</div>
+    </div>`).join('');
+}
+function viewNote(id){
+  const note=NOTES.find(n=>n.id===id);
+  if(!note) return;
+  document.getElementById('note-viewer-title').textContent=note.title;
+  document.getElementById('note-viewer-content').innerHTML=note.content.replace(/\n/g,'<br>');
+  document.getElementById('note-viewer-title').style.color='var(--fg)';
+  if(!state.noteHistory.includes(id)){state.noteHistory.unshift(id);if(state.noteHistory.length>5)state.noteHistory.pop();}
+  renderRecentNotes();
+}
+function renderRecentNotes(){
+  document.getElementById('recent-notes').innerHTML=state.noteHistory.map(id=>{
+    const n=NOTES.find(x=>x.id===id);
+    return n?`<div class="recent-note-item" onclick="viewNote(${n.id})">${n.title}</div>`:'';
+  }).join('');
+}
+
+/* ════════════════════════════════════
+   TOPICS
+   ════════════════════════════════════ */
+function renderTopics(){
+  const diff=state.selectedDifficulty;
+  const topics=diff==='all'?TOPICS:TOPICS.filter(t=>t.difficulty===diff);
+  document.getElementById('topics-grid').innerHTML=topics.map(t=>`
+    <div class="topic-card" onclick="startTopicExam(${t.id})">
+      <div class="topic-name">${t.name}</div>
+      <div class="topic-meta">
+        <span>${t.questions} questions</span>
+        <span class="diff-badge diff-${t.difficulty}">${t.difficulty}</span>
+      </div>
+    </div>`).join('');
+}
+function filterTopics(diff){
+  state.selectedDifficulty=diff;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.toggle('active',b.dataset.diff===diff));
+  renderTopics();
+}
+
+/* ════════════════════════════════════
+   PAPERS (card grid)
+   ════════════════════════════════════ */
+function renderPapers(){
+  const yr=state.selectedYear;
+  const papers=yr==='all'?PAPERS:PAPERS.filter(p=>String(p.year)===String(yr));
+  document.getElementById('papers-grid').innerHTML=papers.map(p=>`
+    <div class="paper-card" onclick="openPaperExam(PAPERS.find(x=>x.id===${p.id}))">
+      <div class="paper-card-top">
+        <span class="year-badge">${p.year}</span>
+        <span class="board-badge">${p.board}</span>
+      </div>
+      <div class="paper-title">${p.title}</div>
+      <div class="paper-card-meta">
+        <span class="marks-pill">📝 ${p.marks} marks</span>
+        <span class="duration">⏱ ${p.duration}</span>
+      </div>
+    </div>`).join('');
+  const years=['all',...new Set(PAPERS.map(p=>p.year).sort((a,b)=>b-a))];
+  document.getElementById('year-filter-pills').innerHTML=years.map(y=>`
+    <button class="year-pill${String(state.selectedYear)===String(y)?' active':''}" onclick="filterByYear('${y}')">${y==='all'?'All Years':y}</button>`).join('');
+}
+function filterByYear(yr){state.selectedYear=yr;renderPapers();}
+
+/* ════════════════════════════════════
+   SPLIT-PANE EXAM
+   ════════════════════════════════════ */
+function openPaperExam(paper){
+  if(!paper) return;
+  state.currentPaper=paper;
+  state.splitAnswers={};
+  renderSplitExam(paper);
+  showPage('pg-papers-exam');
+  startSplitTimer();
+}
+function leaveSplitExam(){
+  stopSplitTimer();
+  showPage('pg-papers');
+}
+function renderSplitExam(paper){
+  document.getElementById('split-paper-title').textContent=paper.title;
+  document.getElementById('split-questions-list').innerHTML=paper.questions.map(q=>`
+    <div class="split-question-card" id="sqcard-${q.n}">
+      <div class="sq-header">
+        <span class="sq-num">Q${q.n}</span>
+        <span class="sq-marks">[${q.marks} marks]</span>
+      </div>
+      <p class="sq-text">${q.text}</p>
+    </div>`).join('');
+  document.getElementById('split-answers-list').innerHTML=paper.questions.map(q=>`
+    <div class="split-answer-box" id="sabox-${q.n}">
+      <div class="sa-header" onclick="toggleAnswerBox(${q.n})">
+        <span>Q${q.n} — ${q.marks} marks</span>
+        <span class="sa-toggle" id="sa-toggle-${q.n}">▼</span>
+      </div>
+      <div class="sa-body" id="sa-body-${q.n}">
+        <div class="answer-tabs">
+          <button class="ans-tab active" id="atab-type-${q.n}" onclick="setAnswerTab(${q.n},'type')">Type</button>
+          <button class="ans-tab" id="atab-upload-${q.n}" onclick="setAnswerTab(${q.n},'upload')">Upload</button>
+          <button class="ans-tab" id="atab-both-${q.n}" onclick="setAnswerTab(${q.n},'both')">Both</button>
+        </div>
+        <div id="ans-type-${q.n}" class="ans-type-area">
+          <textarea id="ans-text-${q.n}" placeholder="Type your answer here…" oninput="saveAnswerText(${q.n},this.value)"></textarea>
+        </div>
+        <div id="ans-upload-${q.n}" class="ans-upload-area" style="display:none">
+          <label class="upload-label">
+            <input type="file" accept="image/*,.pdf" onchange="handleAnswerFile(${q.n},this)">
+            <span>📎 Upload answer image / PDF</span>
+          </label>
+          <span class="upload-name" id="upload-name-${q.n}"></span>
+        </div>
+      </div>
+    </div>`).join('');
+  showSplitPane('questions');
+}
+function toggleAnswerBox(n){
+  const body=document.getElementById('sa-body-'+n);
+  const tog=document.getElementById('sa-toggle-'+n);
+  if(!body) return;
+  body.classList.toggle('collapsed');
+  tog.textContent=body.classList.contains('collapsed')?'▶':'▼';
+}
+function setAnswerTab(n,tab){
+  ['type','upload','both'].forEach(t=>{
+    const b=document.getElementById('atab-'+t+'-'+n);
+    if(b) b.classList.toggle('active',t===tab);
+  });
+  const ta=document.getElementById('ans-type-'+n);
+  const ua=document.getElementById('ans-upload-'+n);
+  if(ta&&ua){
+    ta.style.display=(tab==='type'||tab==='both')?'':'none';
+    ua.style.display=(tab==='upload'||tab==='both')?'':'none';
+  }
+  if(!state.splitAnswers[n]) state.splitAnswers[n]={mode:'type',text:'',file:null};
+  state.splitAnswers[n].mode=tab;
+}
+function saveAnswerText(n,val){
+  if(!state.splitAnswers[n]) state.splitAnswers[n]={mode:'type',text:'',file:null};
+  state.splitAnswers[n].text=val;
+}
+function handleAnswerFile(n,input){
+  const file=input.files[0];
+  if(!file) return;
+  if(!state.splitAnswers[n]) state.splitAnswers[n]={mode:'upload',text:'',file:null};
+  state.splitAnswers[n].file=file;
+  const el=document.getElementById('upload-name-'+n);
+  if(el) el.textContent=file.name;
+}
+function showSplitPane(pane){
+  const qp=document.getElementById('split-questions-pane');
+  const ap=document.getElementById('split-answers-pane');
+  document.querySelectorAll('.split-tab').forEach(t=>t.classList.remove('active'));
+  const tabs=document.querySelectorAll('.split-tab');
+  if(window.innerWidth<=768){
+    qp.style.display=pane==='questions'?'':'none';
+    ap.style.display=pane==='answers'?'flex':'none';
+    if(tabs[0]) tabs[0].classList.toggle('active',pane==='questions');
+    if(tabs[1]) tabs[1].classList.toggle('active',pane==='answers');
+  } else {
+    qp.style.display='';ap.style.display='flex';
+    if(tabs[0]) tabs[0].classList.add('active');
+  }
+}
+
+/* Split timer */
+function startSplitTimer(){
+  state.splitTimerSeconds=state.currentPaper?durationToSeconds(state.currentPaper.duration):5400;
+  state.splitTimerPaused=false;
+  stopSplitTimer();
+  updateSplitTimerDisplay();
+  state.splitTimerInterval=setInterval(()=>{
+    if(!state.splitTimerPaused&&state.splitTimerSeconds>0){
+      state.splitTimerSeconds--;updateSplitTimerDisplay();
+    }
+  },1000);
+}
+function stopSplitTimer(){
+  if(state.splitTimerInterval){clearInterval(state.splitTimerInterval);state.splitTimerInterval=null;}
+}
+function toggleSplitTimer(){
+  state.splitTimerPaused=!state.splitTimerPaused;
+  const btn=document.getElementById('split-pause-btn');
+  if(btn) btn.textContent=state.splitTimerPaused?'▶':'⏸';
+}
+function updateSplitTimerDisplay(){
+  const s=state.splitTimerSeconds;
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+  const el=document.getElementById('split-timer');
+  if(el) el.textContent=h>0?`${h}:${pad(m)}:${pad(sec)}`:`${pad(m)}:${pad(sec)}`;
+}
+function durationToSeconds(dur){
+  const hm=dur.match(/(\d+)h/),mm=dur.match(/(\d+)min/);
+  return (hm?parseInt(hm[1])*3600:0)+(mm?parseInt(mm[1])*60:0)||5400;
+}
+function pad(n){return String(n).padStart(2,'0');}
+
+/* Submit all */
+function submitAllAndFeedback(){
+  const paper=state.currentPaper;
+  if(!paper) return;
+  showLoading();
+  const answers=paper.questions.map(q=>({
+    question:q.text,marks:q.marks,
+    answer:state.splitAnswers[q.n]?.text||'(No answer provided)',
+  }));
+  setTimeout(()=>{
+    const results=answers.map(a=>{
+      const hasAnswer=a.answer&&a.answer!=='(No answer provided)'&&a.answer.trim().length>15;
+      const awarded=hasAnswer?Math.round(a.marks*(0.5+Math.random()*0.45)):Math.round(a.marks*Math.random()*0.35);
+      const pct=awarded/a.marks;
+      return{...a,awarded,feedback:pct>=0.7?'Good answer with relevant economic terminology and clear analysis.':pct>=0.4?'Partially correct — needs more development and specific examples.':'Insufficient response. Ensure you address all parts of the question with economic theory.'};
+    });
+    const total=results.reduce((s,r)=>s+r.awarded,0);
+    const maxTotal=results.reduce((s,r)=>s+r.marks,0);
+    const timeTaken=durationToSeconds(paper.duration)-state.splitTimerSeconds;
+    state.examHistory.push({date:new Date().toISOString(),paper:paper.title,score:total,max:maxTotal,time:timeTaken});
+    localStorage.setItem('examHistory',JSON.stringify(state.examHistory));
+    state.lastResults={results,total,maxTotal,timeTaken};
+    stopSplitTimer();
+    hideLoading();
+    renderResults(results,total,maxTotal,timeTaken);
+    showPage('pg-results');
+  },2000);
+}
+
+/* ════════════════════════════════════
+   TOPIC EXAM (one-at-a-time)
+   ════════════════════════════════════ */
+function startTopicExam(topicId){
+  const topic=TOPICS.find(t=>t.id===topicId);
+  if(!topic) return;
+  const count=Math.min(topic.questions,5);
+  state.currentExam={
+    topic,
+    questions:Array.from({length:count},(_,i)=>({n:i+1,text:`Question ${i+1}: Analyse and evaluate the key aspects of ${topic.name} in the context of the modern UK economy. Discuss with reference to relevant economic theory and real-world examples.`,marks:8})),
+    answers:{},currentQ:0,
+  };
+  renderExamPage();
+  showPage('pg-exam');
+  startExamTimer();
+}
+function leaveTopicExam(){stopExamTimer();showPage('pg-topics');}
+function renderExamPage(){
+  const exam=state.currentExam;
+  if(!exam) return;
+  document.getElementById('exam-title').textContent=exam.topic.name;
+  document.getElementById('exam-q-total').textContent=exam.questions.length;
+  renderExamDots();
+  renderExamQuestion(0);
+}
+function renderExamQuestion(idx){
+  const exam=state.currentExam;
+  const q=exam.questions[idx];
+  exam.currentQ=idx;
+  document.getElementById('exam-q-num').textContent=idx+1;
+  document.getElementById('exam-q-display').textContent='Question '+(idx+1);
+  document.getElementById('exam-q-text').textContent=q.text;
+  document.getElementById('exam-q-marks').textContent='['+q.marks+' marks]';
+  document.getElementById('exam-answer-text').value=exam.answers[idx]?.text||'';
+  document.querySelectorAll('.exam-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+}
+function renderExamDots(){
+  const exam=state.currentExam;
+  document.getElementById('exam-dots').innerHTML=exam.questions.map((_,i)=>`
+    <button class="exam-dot${i===0?' active':''}${exam.answers[i]?' answered':''}" onclick="renderExamQuestion(${i})">${i+1}</button>`).join('');
+}
+function examNav(dir){
+  const exam=state.currentExam;
+  const next=exam.currentQ+dir;
+  if(next>=0&&next<exam.questions.length) renderExamQuestion(next);
+}
+function setExamTab(tab){
+  ['type','upload','both'].forEach(t=>{
+    const b=document.getElementById('etab-'+t);
+    if(b) b.classList.toggle('active',t===tab);
+  });
+  const ta=document.getElementById('exam-type-area');
+  const ua=document.getElementById('exam-upload-area');
+  ta.style.display=(tab==='type'||tab==='both')?'':'none';
+  ua.style.display=(tab==='upload'||tab==='both')?'block':'none';
+}
+function saveExamAnswer(){
+  const exam=state.currentExam;
+  const idx=exam.currentQ;
+  exam.answers[idx]={text:document.getElementById('exam-answer-text').value};
+  const dots=document.querySelectorAll('.exam-dot');
+  if(dots[idx]) dots[idx].classList.add('answered');
+  showToast('Answer saved','success');
+}
+function handleExamFile(input){
+  const file=input.files[0];
+  if(!file) return;
+  document.getElementById('exam-upload-name').textContent=file.name;
+}
+function finishExam(){
+  const exam=state.currentExam;
+  if(!exam) return;
+  showLoading();
+  setTimeout(()=>{
+    const results=exam.questions.map((q,i)=>{
+      const a=exam.answers[i]?.text||'';
+      const hasAnswer=a.trim().length>15;
+      const awarded=hasAnswer?Math.round(q.marks*(0.5+Math.random()*0.45)):Math.round(q.marks*Math.random()*0.3);
+      const pct=awarded/q.marks;
+      return{question:q.text,marks:q.marks,answer:a,awarded,feedback:pct>=0.7?'Well answered with clear economic reasoning.':pct>=0.4?'Partially correct. Add more detail and use economic terminology.':'Needs significant development.'};
+    });
+    const total=results.reduce((s,r)=>s+r.awarded,0);
+    const maxTotal=results.reduce((s,r)=>s+r.marks,0);
+    const timeTaken=exam.questions.length*8*60-state.examTimerSeconds;
+    state.examHistory.push({date:new Date().toISOString(),paper:exam.topic.name,score:total,max:maxTotal,time:timeTaken});
+    localStorage.setItem('examHistory',JSON.stringify(state.examHistory));
+    state.lastResults={results,total,maxTotal,timeTaken};
+    stopExamTimer();
+    hideLoading();
+    renderResults(results,total,maxTotal,timeTaken);
+    showPage('pg-results');
+  },1500);
+}
+
+/* Exam timer */
+function startExamTimer(){
+  const exam=state.currentExam;
+  state.examTimerSeconds=exam?exam.questions.length*8*60:2400;
+  stopExamTimer();
+  updateExamTimerDisplay();
+  state.examTimerInterval=setInterval(()=>{
+    if(state.examTimerSeconds>0){state.examTimerSeconds--;updateExamTimerDisplay();}
+  },1000);
+}
+function stopExamTimer(){
+  if(state.examTimerInterval){clearInterval(state.examTimerInterval);state.examTimerInterval=null;}
+}
+function updateExamTimerDisplay(){
+  const s=state.examTimerSeconds;
+  const m=Math.floor(s/60),sec=s%60;
+  const el=document.getElementById('exam-timer');
+  if(el) el.textContent=pad(m)+':'+pad(sec);
+}
+
+/* ════════════════════════════════════
+   RESULTS
+   ════════════════════════════════════ */
+function renderResults(results,total,maxTotal,timeTaken){
+  const pct=Math.round(total/maxTotal*100);
+  document.getElementById('result-score-hero').textContent=total+'/'+maxTotal;
+  document.getElementById('result-pct').textContent=pct+'%';
+  document.getElementById('result-grade').textContent=pct>=70?'A':pct>=60?'B':pct>=50?'C':pct>=40?'D':'U';
+  document.getElementById('result-time').textContent=formatTime(timeTaken);
+  const good=results.filter(r=>r.awarded/r.marks>=0.7).length;
+  document.getElementById('res-stat-correct').textContent=good;
+  document.getElementById('res-stat-avg').textContent=pct+'%';
+  document.getElementById('res-stat-time').textContent=formatTime(timeTaken);
+  document.getElementById('results-feedback').innerHTML=results.map((r,i)=>`
+    <div class="result-card ${r.awarded/r.marks>=0.7?'result-good':'result-poor'}">
+      <div class="result-card-header"><span>Q${i+1}</span><span>${r.awarded}/${r.marks}</span></div>
+      <p class="result-q">${r.question}</p>
+      <p class="result-ans"><strong>Your answer:</strong> ${(r.answer||'(none)').substring(0,220)}${(r.answer||'').length>220?'…':''}</p>
+      <p class="result-fb">${r.feedback}</p>
+    </div>`).join('');
+  requestAnimationFrame(()=>{drawResultsCharts(results);});
+}
+function formatTime(s){
+  if(!s||s<0) s=0;
+  const m=Math.floor(s/60),sec=s%60;
+  return m+'m '+sec+'s';
+}
+function drawResultsCharts(results){
+  drawBarChart('chart-score',results.map(r=>r.awarded/r.marks),results.map((_,i)=>'Q'+(i+1)));
+  drawBarChart('chart-dist',results.map(r=>r.marks/Math.max(...results.map(x=>x.marks))),results.map(r=>r.marks+'m'));
+}
+function drawBarChart(id,values,labels){
+  const canvas=document.getElementById(id);
+  if(!canvas) return;
+  canvas.width=canvas.offsetWidth||300;
+  canvas.height=120;
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const n=values.length;
+  const barW=Math.max(4,Math.floor((w-20)/n)-4);
+  values.forEach((v,i)=>{
+    const barH=Math.floor(v*(h-28));
+    const x=10+i*(barW+4);
+    const y=h-18-barH;
+    ctx.fillStyle=v>=0.7?'rgba(0,200,100,.8)':v>=0.4?'rgba(255,160,0,.8)':'rgba(240,60,60,.8)';
+    ctx.fillRect(x,y,barW,barH);
+    ctx.fillStyle='rgba(170,170,170,.9)';
+    ctx.font='9px Barlow,sans-serif';
+    ctx.fillText(labels[i]||'',x,h-4);
+  });
+}
+function retryExam(){
+  if(state.currentPaper){openPaperExam(state.currentPaper);}
+  else if(state.currentExam){startTopicExam(state.currentExam.topic.id);}
+  else showPage('pg-home');
+}
+
+/* ════════════════════════════════════
+   QUICKMARK
+   ════════════════════════════════════ */
+function handleQmFile(input){
+  const file=input.files[0];
+  if(file) document.getElementById('qm-upload-name').textContent=file.name;
+}
+function doQuickMark(){
+  const q=document.getElementById('qm-question').value.trim();
+  const a=document.getElementById('qm-answer').value.trim();
+  if(!q||!a){showToast('Please enter a question and answer','error');return;}
+  showLoading();
+  setTimeout(()=>{
+    hideLoading();
+    const marks=Math.floor(Math.random()*4)+5;
+    const total=10;
+    document.getElementById('qm-result').style.display='flex';
+    document.getElementById('qm-score').textContent=marks+'/'+total;
+    document.getElementById('qm-feedback').textContent=marks>=8
+      ?'Strong answer with good use of economic terminology, clear structure, and relevant analysis.'
+      :marks>=6
+      ?'Decent answer but could benefit from more specific real-world examples and deeper evaluation.'
+      :'This answer needs more development. Ensure you define key terms, apply economic theory, and evaluate multiple perspectives.';
+  },1500);
+}
+
+/* ════════════════════════════════════
+   AI MOCK
+   ════════════════════════════════════ */
+function sendAiMessage(panelId){
+  const input=document.getElementById('ai-input-'+panelId);
+  const chat=document.getElementById('ai-chat-'+panelId);
+  if(!input||!chat) return;
+  const msg=input.value.trim();
+  if(!msg) return;
+  input.value='';
+  chat.innerHTML+=`<div class="ai-msg user">${msg}</div>`;
+  chat.scrollTop=chat.scrollHeight;
+  setTimeout(()=>{
+    chat.innerHTML+=`<div class="ai-msg ai">${generateMockAiResponse(msg)}</div>`;
+    chat.scrollTop=chat.scrollHeight;
+  },700);
+}
+function generateMockAiResponse(msg){
+  const r=[
+    'Great question! To answer this well, structure your response: define the concept, explain the mechanism, apply to a real-world example, then evaluate.',
+    'Consider both short-run and long-run effects. In the short run, ceteris paribus… In the long run, factors such as expectations and supply-side adjustments matter.',
+    'A strong exam answer would reference: relevant diagrams, economic theory (e.g. AD-AS model), and specific policies with their limitations.',
+    'Think about the stakeholders: consumers, producers, government, and the economy as a whole. How does each group respond differently?',
+    'Use the PEEL structure: Point, Evidence, Explain, Link. This ensures your argument is clear and logically developed.',
+  ];
+  return r[Math.floor(Math.random()*r.length)];
+}
+
+/* ════════════════════════════════════
+   WEBGL BACKGROUND
+   ════════════════════════════════════ */
+function initBackground(){
+  const canvas=document.getElementById('bg-canvas');
+  if(!canvas) return;
+  const gl=canvas.getContext('webgl')||canvas.getContext('experimental-webgl');
+  if(!gl){document.body.classList.add('no-webgl');return;}
+
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;gl.viewport(0,0,canvas.width,canvas.height);}
+  window.addEventListener('resize',resize);resize();
+
+  const vsrc=`attribute vec2 a_pos;void main(){gl_Position=vec4(a_pos,0.,1.);}`;
+  const fsrc=`
+    precision mediump float;
+    uniform vec2 u_res;uniform float u_time;uniform int u_dark;
+    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float noise(vec2 p){
+      vec2 i=floor(p),f=fract(p);
+      f=f*f*(3.-2.*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
+    }
+    float fbm(vec2 p){float v=0.;float a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.01;a*=.5;}return v;}
+    void main(){
+      vec2 uv=gl_FragCoord.xy/u_res;
+      float t=u_time*.08;
+      vec2 q=vec2(fbm(uv+vec2(t,t*.7)),fbm(uv+vec2(1.7,9.2)+t*.6));
+      float f=fbm(uv*2.+q);
+      if(u_dark==1){
+        float g=f*.12+.02;gl_FragColor=vec4(g,g,g,1.);
+      } else {
+        float r=.84+f*.1+sin(uv.x*4.+t)*.03;
+        float g=.93+f*.05+sin(uv.y*3.+t*.9)*.03;
+        float b=.99+f*.01;
+        gl_FragColor=vec4(clamp(r,0.,1.),clamp(g,0.,1.),clamp(b,0.,1.),1.);
+      }
+    }`;
+
+  function mkShader(type,src){
+    const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;
+  }
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mkShader(gl.VERTEX_SHADER,vsrc));
+  gl.attachShader(prog,mkShader(gl.FRAGMENT_SHADER,fsrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'a_pos');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+
+  const uRes=gl.getUniformLocation(prog,'u_res');
+  const uTime=gl.getUniformLocation(prog,'u_time');
+  const uDark=gl.getUniformLocation(prog,'u_dark');
+  const start=Date.now();
+
+  function render(){
+    gl.uniform2f(uRes,canvas.width,canvas.height);
+    gl.uniform1f(uTime,(Date.now()-start)/1000);
+    gl.uniform1i(uDark,document.documentElement.dataset.theme==='dark'?1:0);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    requestAnimationFrame(render);
+  }
+  render();
+}
+
+/* ════════════════════════════════════
+   CURSOR
+   ════════════════════════════════════ */
+function initCursor(){
+  const cursor=document.getElementById('cursor');
+  const trail=document.getElementById('cursor-trail');
+  if(!cursor||!trail) return;
+  let tx=0,ty=0,cx=0,cy=0;
+  document.addEventListener('mousemove',e=>{
+    tx=e.clientX;ty=e.clientY;
+    cursor.style.transform=`translate(${tx-8}px,${ty-8}px)`;
+  });
+  (function animTrail(){
+    cx+=(tx-cx)*.15;cy+=(ty-cy)*.15;
+    trail.style.transform=`translate(${cx-4}px,${cy-4}px)`;
+    requestAnimationFrame(animTrail);
+  })();
+}
+
+/* ════════════════════════════════════
+   INIT
+   ════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded',()=>{
+  const savedTheme=localStorage.getItem('theme');
+  if(savedTheme){
+    document.documentElement.dataset.theme=savedTheme;
+    document.getElementById('theme-icon-dark').style.display=savedTheme==='dark'?'':'none';
+    document.getElementById('theme-icon-light').style.display=savedTheme==='light'?'':'none';
+  }
+  const savedUser=localStorage.getItem('user');
+  if(savedUser){
+    try{state.user=JSON.parse(savedUser);}catch(e){}
+    state.apiKey=localStorage.getItem('apiKey');
+    showPage('pg-home');
+  }
+  initBackground();
+  initCursor();
+});
+</script>
 </body>
 </html>
