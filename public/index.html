@@ -1557,6 +1557,31 @@ body.mobile-bg #bg-canvas { display:none !important; }
       <label for="r-pass2">Confirm Password</label>
       <input id="r-pass2" type="password" placeholder="Repeat password">
     </div>
+    <div class="fl">
+      <label>Exam Board</label>
+      <select id="reg-board" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;color:var(--fg);font-family:inherit;font-size:.95rem;outline:none;cursor:none;width:100%;">
+        <option value="">Select exam board…</option>
+        <option value="AQA">AQA</option>
+        <option value="Edexcel">Edexcel</option>
+        <option value="OCR">OCR</option>
+        <option value="CIE">CIE / Cambridge</option>
+        <option value="WJEC">WJEC</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="fl">
+      <label style="margin-bottom:.5rem;display:block;">Subjects</label>
+      <div id="reg-subjects" style="display:flex;flex-wrap:wrap;gap:.5rem;">
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="Economics"> Economics</label>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="Business"> Business</label>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="Maths"> Maths</label>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="Further Maths"> Further Maths</label>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="Geography"> Geography</label>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="History"> History</label>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="Politics"> Politics</label>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:none;"><input type="checkbox" value="Sociology"> Sociology</label>
+      </div>
+    </div>
     <div class="login-err" id="r-err"></div>
     <button class="fill-btn" onclick="doRegister()">
       <span>
@@ -2540,22 +2565,20 @@ function gotoApiSetup(){
   }
   goto('pg-api');
 }
-function saveApiKey(){
-  const inp = document.getElementById('api-key-inp');
-  const err = document.getElementById('api-err');
-  const key = inp.value.trim();
-  if(!key){ err.textContent = 'Please paste your Groq API key.'; return; }
-  if(!key.startsWith('gsk_') || key.length < 20){
-    err.textContent = "That doesn't look like a valid Groq API key. It should start with gsk_";
-    return;
-  }
-  err.textContent = '';
-  groqApiKey = key;
-  localStorage.setItem('eco_groq_key', key);
-  // Show success then go home
-  const badge = document.getElementById('api-saved-badge');
-  badge.style.display = 'inline-flex';
-  setTimeout(() => goto('pg-home'), 900);
+async function saveApiKey(){
+  const key=document.getElementById('api-key-inp').value.trim();
+  if(!key){showToast('Please enter an API key','error');return;}
+  showLoading();
+  try{
+    const res=await fetch('/api/user/api-key/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});
+    const data=await res.json();
+    hideLoading();
+    if(!res.ok){showToast(data.error||'Failed to save API key','error');return;}
+    state.apiKey=key;
+    localStorage.setItem('apiKey',key);
+    goto('pg-home');
+    showToast('API Key saved!','success');
+  }catch(e){hideLoading();showToast('Network error. Please try again.','error');}
 }
 function skipApiKey(){
   groqApiKey = '';
@@ -2582,30 +2605,46 @@ function toggleApiKeyVisibility(){
 document.getElementById('api-key-inp').addEventListener('keydown', e => { if(e.key==='Enter') saveApiKey(); });
 
 // ══ AUTH ══
-function doLogin(){
-  const email = document.getElementById('l-email').value.trim();
-  const pass  = document.getElementById('l-pass').value;
-  const err   = document.getElementById('l-err');
-  if(!email){ err.textContent='Please enter your email or student ID.'; return; }
-  if(!pass){  err.textContent='Password cannot be empty.'; return; }
-  err.textContent = '';
-  setUser(email.split('@')[0]);
-  gotoApiSetup();
+function showLoading(){document.querySelectorAll('.fill-btn').forEach(b=>b.disabled=true);}
+function hideLoading(){document.querySelectorAll('.fill-btn').forEach(b=>b.disabled=false);}
+async function doLogin(){
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  if(!email||!pass){showToast('Please fill in all fields','error');return;}
+  showLoading();
+  try{
+    const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const data=await res.json();
+    hideLoading();
+    if(!res.ok){showToast(data.error||'Login failed','error');return;}
+    state.user={email,name:data.user?.user_metadata?.full_name||email.split('@')[0]};
+    localStorage.setItem('user',JSON.stringify(state.user));
+    goto('pg-home');
+    showToast('Welcome back, '+state.user.name+'!','success');
+  }catch(e){hideLoading();showToast('Network error. Please try again.','error');}
 }
 function doGuest(){ setUser('Guest'); gotoApiSetup(); }
-function doRegister(){
-  const name  = document.getElementById('r-name').value.trim();
-  const email = document.getElementById('r-email').value.trim();
-  const pass  = document.getElementById('r-pass').value;
-  const pass2 = document.getElementById('r-pass2').value;
-  const err   = document.getElementById('r-err');
-  if(!name)  { err.textContent='Please enter your name.'; return; }
-  if(!email) { err.textContent='Please enter your email.'; return; }
-  if(!pass || pass.length < 6) { err.textContent='Password must be at least 6 characters.'; return; }
-  if(pass !== pass2) { err.textContent='Passwords do not match.'; return; }
-  err.textContent='';
-  setUser(name);
-  gotoApiSetup();
+async function doRegister(){
+  const name=document.getElementById('r-name').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  const board=document.getElementById('reg-board').value;
+  const subjects=[...document.querySelectorAll('#reg-subjects input:checked')].map(cb=>cb.value);
+  if(!name||!email||!pass){showToast('Please fill in all fields','error');return;}
+  if(!board){showToast('Please select your exam board','error');return;}
+  if(!subjects.length){showToast('Please select at least one subject','error');return;}
+  if(pass.length<8){showToast('Password must be at least 8 characters','error');return;}
+  showLoading();
+  try{
+    const res=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,full_name:name,subjects,exam_board:board})});
+    const data=await res.json();
+    hideLoading();
+    if(!res.ok){showToast(data.error||'Registration failed','error');return;}
+    state.user={email,name};
+    localStorage.setItem('user',JSON.stringify(state.user));
+    goto('pg-api');
+    showToast('Account created! Check your email to verify.','success');
+  }catch(e){hideLoading();showToast('Network error. Please try again.','error');}
 }
 function doLogout(){ localStorage.removeItem('eco_groq_key'); groqApiKey=''; goto('pg-login'); }
 function setUser(name){
