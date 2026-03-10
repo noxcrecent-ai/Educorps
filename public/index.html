@@ -1,31 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduCorps</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>EduCorps</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;800&family=Caveat:wght@500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+/* ══ THEMES ══ */
+[data-theme="dark"] {
+  --bg:         #000000;
+  --fg:         #ffffff;
+  --grey:       #aaaaaa;
+  --border:     rgba(255,255,255,.22);
+  --card-bg:    rgba(255,255,255,.05);
+  --card-hover: rgba(255,255,255,.10);
+  --accent:     #ffffff;
+}
+[data-theme="light"] {
+  --bg:         #f8feff;
+  --fg:         #080e18;
+  --grey:       #4a6070;
+  --border:     rgba(0,150,200,.18);
+  --card-bg:    rgba(255,255,255,.72);
+  --card-hover: rgba(220,245,255,.92);
+  --accent:     #00b4d8;
+}
+
+/* ══ TYPOGRAPHY MODES ══ */
+/* DARK = Barlow bold. LIGHT = Caveat cursive only */
+[data-theme="dark"] body { font-family:'Barlow', sans-serif; font-weight:600; letter-spacing:.02em; }
+[data-theme="light"] body { font-family:'Caveat', cursive; font-weight:600; }
+
+html {
+  font-size: clamp(14px, 1.1vw, 17px);
+}
+html, body {
+  width:100%; height:100%;
+  background:var(--bg);
+  color:var(--fg);
+  overflow:hidden;
+  cursor:none;
+  transition:background .5s, color .5s;
+}
+
+[data-theme="dark"] .login-brand,
+[data-theme="dark"] .top-logo,
+[data-theme="dark"] .card-title,
+[data-theme="dark"] .sec-heading,
+[data-theme="dark"] .exam-name,
+[data-theme="dark"] .results-score-big,
+[data-theme="dark"] .q-text,
+[data-theme="dark"] .qm-heading {
+  font-family:'Bebas Neue', sans-serif;
+  font-weight:400; letter-spacing:.08em;
+}
+
+[data-theme="light"] * {
+  font-family:'Caveat', cursive !important;
+}
+</style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to EduCorps</h1>
-    </header>
-    <main>
-        <section>
-            <h2>About Us</h2>
-            <p>EduCorps is dedicated to enhancing learning experiences through technology.</p>
-        </section>
-        <section>
-            <h2>Our Services</h2>
-            <ul>
-                <li>Online Courses</li>
-                <li>Personal Tutoring</li>
-                <li>Educational Resources</li>
-            </ul>
-        </section>
-    </main>
-    <footer>
-        <p>Copyright &copy; 2026 EduCorps</p>
-    </footer>
+<canvas id="bg-canvas"></canvas>
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+
+<button id="theme-btn" title="Toggle theme">
+  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y1="4.22"/></svg>
+</button>
+
+<!-- LOGIN PAGE -->
+<div id="pg-login" class="page visible">
+  <div class="login-wrap">
+    <div class="login-brand">EduCorps</div>
+    <div class="login-tagline">Your AI-powered study companion</div>
+    <div class="fl">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@example.com">
+    </div>
+    <div class="fl">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <button class="fill-btn" id="login-btn"><span>Sign In</span></button>
+    <div class="divider"></div>
+    <button class="ghost-fill" id="goto-register">Create Account</button>
+    <div class="login-links">
+      <a href="#">Forgot password?</a>
+      <a href="#">Privacy policy</a>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div id="pg-register" class="page hidden">
+  <div class="login-wrap">
+    <div class="login-brand">EduCorps</div>
+    <div class="login-tagline">Create your account</div>
+    <div class="fl">
+      <label>Full Name</label>
+      <input type="text" id="reg-name" placeholder="Your name">
+    </div>
+    <div class="fl">
+      <label>Email</label>
+      <input type="email" id="reg-email" placeholder="you@example.com">
+    </div>
+    <div class="fl">
+      <label>Password</label>
+      <input type="password" id="reg-password" placeholder="Min 8 characters">
+    </div>
+    <div class="login-err" id="reg-err"></div>
+    <button class="fill-btn" id="reg-btn"><span>Create Account</span></button>
+    <div class="divider"></div>
+    <button class="ghost-fill" id="goto-login">Back to Sign In</button>
+  </div>
+</div>
+
+<script>
+// Theme toggle
+const themeBtn = document.getElementById('theme-btn');
+themeBtn.addEventListener('click', () => {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+// Cursor
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursor-trail');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    trail.style.left = e.clientX + 'px';
+    trail.style.top = e.clientY + 'px';
+  }, 80);
+});
+document.querySelectorAll('a,button,input').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('ch'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('ch'));
+});
+
+// Page navigation
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('visible');
+    p.classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+  document.getElementById(id).classList.add('visible');
+}
+
+document.getElementById('goto-register').addEventListener('click', () => showPage('pg-register'));
+document.getElementById('goto-login').addEventListener('click', () => showPage('pg-login'));
+</script>
 </body>
 </html>
