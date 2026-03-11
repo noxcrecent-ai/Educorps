@@ -1060,7 +1060,7 @@ body.mobile-bg #bg-canvas { display:none !important; }
 .hpl-label { color:var(--grey); }
 [data-theme="dark"] .hpl-label { font-size:.54rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
 [data-theme="light"] .hpl-label { font-size:.9rem; }
-#home-progress-canvas { width:100%; height:150px; display:block; border-radius:8px; }
+#home-progress-canvas { width:100%; height:200px; display:block; border-radius:8px; }
 .home-progress-empty {
   height:150px; display:flex; align-items:center; justify-content:center;
   color:var(--grey); opacity:.45; text-align:center; line-height:1.7;
@@ -1460,7 +1460,7 @@ body.mobile-bg #bg-canvas { display:none !important; }
   }
   .home-eyebrow { text-align:center; }
   /* Graph canvas height reduced on mobile */
-  #home-progress-canvas { height:120px !important; }
+  #home-progress-canvas { height:160px !important; }
   .home-progress-wrap { padding:16px !important; }
   .home-progress-title { font-size:1.1rem !important; }
   .hpl-label { font-size:.5rem !important; }
@@ -1515,6 +1515,7 @@ body.mobile-bg #bg-canvas { display:none !important; }
 .prog-bar{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1);}
 .prog-subj-meta{display:flex;gap:16px;font-size:.58rem;opacity:.45;letter-spacing:.06em;text-transform:uppercase;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -1786,6 +1787,25 @@ body.mobile-bg #bg-canvas { display:none !important; }
         <div class="subj-card-stat" id="stat-Computer_Science">0 papers</div>
         <div class="subj-card-arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow"/></svg></div>
       </div>
+    </div>
+
+    <!-- Overall Progress Graph -->
+    <div class="home-progress-wrap" id="home-progress-wrap">
+      <div class="home-progress-header">
+        <div>
+          <div class="home-progress-title">Score History</div>
+          <div class="home-progress-sub">all subjects · most recent attempts</div>
+        </div>
+        <div class="home-progress-legend" id="home-progress-legend">
+          <div class="hpl-item"><span class="hpl-dot" style="background:#00e0ff"></span><span class="hpl-label">Maths</span></div>
+          <div class="hpl-item"><span class="hpl-dot" style="background:#7c3aed"></span><span class="hpl-label">Physics</span></div>
+          <div class="hpl-item"><span class="hpl-dot" style="background:#4ade80"></span><span class="hpl-label">Chem</span></div>
+          <div class="hpl-item"><span class="hpl-dot" style="background:#e8307e"></span><span class="hpl-label">Econ</span></div>
+          <div class="hpl-item"><span class="hpl-dot" style="background:#fbbf24"></span><span class="hpl-label">CS</span></div>
+        </div>
+      </div>
+      <canvas id="home-progress-canvas"></canvas>
+      <div class="home-progress-empty" id="home-progress-empty">COMPLETE YOUR FIRST PAPER<br>TO SEE YOUR PROGRESS GRAPH</div>
     </div>
 
     <!-- Stats row -->
@@ -2281,9 +2301,31 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <div id="toast"></div>
 
 <script>
+// ══ SUPABASE ══
+const SUPA_URL = 'https://xjwfpercmrbtsjtjjcik.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqd2ZwZXJjbXJidHNqdGpqY2lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mzc1OTMsImV4cCI6MjA4ODUxMzU5M30.oABY0VAUzFX4q2ZyMYLgo2TqCPOsOp2JutRXiNF_3-8';
+const supaReady = SUPA_URL !== 'YOUR_SUPABASE_URL' && SUPA_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+const supa = supaReady
+  ? supabase.createClient(SUPA_URL, SUPA_KEY)
+  : {
+      auth: {
+        getSession:         async () => ({ data: { session: null } }),
+        signInWithPassword: async () => ({ error: { message: 'Supabase not configured — add your URL and key.' } }),
+        signUp:             async () => ({ error: { message: 'Supabase not configured — add your URL and key.' } }),
+        signOut:            async () => {}
+      },
+      from: () => ({
+        select: () => ({ eq: () => ({ single: async () => ({ data: null }) }) }),
+        upsert: async () => {},
+        update: () => ({ eq: async () => {} }),
+        insert: async () => {}
+      })
+    };
+
 // ══ STATE ══
 let isDark = true;
 let currentUser = '';
+let currentUserId = null;
 let currentExam = null;
 let currentQ = 0;
 let answeredQs = new Set();
@@ -2594,7 +2636,7 @@ function drawHomeProgress(){
   const canvas = document.getElementById('home-progress-canvas');
   if(!canvas || !canvas.offsetParent || canvas.offsetWidth === 0) return;
   const dpr = window.devicePixelRatio || 1;
-  const W = canvas.offsetWidth, H = 150;
+  const W = canvas.offsetWidth, H = 200;
   canvas.width  = W * dpr;
   canvas.height = H * dpr;
   canvas.style.width  = W + 'px';
@@ -2603,79 +2645,100 @@ function drawHomeProgress(){
   ctx.scale(dpr, dpr);
   ctx.clearRect(0,0,W,H);
 
-  const hist = examHistory;
   const dark = document.documentElement.getAttribute('data-theme') !== 'light';
-  const fgCol  = dark ? 'rgba(255,255,255,.9)'  : '#06101a';
-  const grCol  = dark ? 'rgba(255,255,255,.07)' : 'rgba(0,180,216,.07)';
-  const lineC  = dark ? 'rgba(255,255,255,.85)' : '#00b4d8';
-  const dotC   = dark ? '#ffffff'               : '#00b4d8';
-  const avgC   = dark ? 'rgba(255,255,255,.25)' : 'rgba(0,180,216,.3)';
-  const labelC = dark ? 'rgba(255,255,255,.38)' : '#4a6070';
-  const tickC  = dark ? 'rgba(255,255,255,.12)' : 'rgba(0,180,216,.15)';
+  const labelC = dark ? 'rgba(255,255,255,.35)' : '#4a6070';
+  const tickC  = dark ? 'rgba(255,255,255,.08)' : 'rgba(0,180,216,.12)';
+  const avgC   = dark ? 'rgba(255,255,255,.18)' : 'rgba(0,180,216,.25)';
 
-  const PAD_L=36, PAD_R=16, PAD_T=14, PAD_B=32;
+  const PAD_L=38, PAD_R=18, PAD_T=16, PAD_B=36;
   const gW = W - PAD_L - PAD_R;
   const gH = H - PAD_T - PAD_B;
 
-  // Grid lines at 25%, 50%, 75%, 100%
+  // Grid lines
   ctx.font = '9px Barlow,sans-serif';
   ctx.textAlign = 'right';
   [0,25,50,75,100].forEach(v=>{
     const y = PAD_T + gH - (v/100)*gH;
-    ctx.strokeStyle = tickC;
-    ctx.lineWidth = .75;
-    ctx.setLineDash([3,4]);
-    ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W-PAD_R, y); ctx.stroke();
+    ctx.strokeStyle = tickC; ctx.lineWidth = .75; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(W-PAD_R,y); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = labelC;
     ctx.fillText(v+'%', PAD_L-5, y+3.5);
   });
 
-  // Average line
-  const avgPct = hist.reduce((a,h)=>a+h.pct,0)/hist.length;
-  const avgY = PAD_T + gH - (avgPct/100)*gH;
-  ctx.strokeStyle = avgC; ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+  // Draw one line per subject (only subjects that have history)
+  const SUBJ_COLS = {
+    'Mathematics':'#00e0ff','Physics':'#7c3aed','Chemistry':'#4ade80',
+    'Economics':'#e8307e','Computer Science':'#fbbf24'
+  };
+
+  // Collect all unique timestamps across all subjects to define x-axis
+  const allEntries = [...examHistory].sort((a,b)=>a.ts-b.ts);
+  if(allEntries.length === 0) return;
+
+  // Overall avg line
+  const overallAvg = allEntries.reduce((a,h)=>a+h.pct,0)/allEntries.length;
+  const avgY = PAD_T + gH - (overallAvg/100)*gH;
+  ctx.strokeStyle = avgC; ctx.lineWidth = 1; ctx.setLineDash([5,5]);
   ctx.beginPath(); ctx.moveTo(PAD_L,avgY); ctx.lineTo(W-PAD_R,avgY); ctx.stroke();
   ctx.setLineDash([]);
+  ctx.fillStyle = labelC; ctx.font='8px Barlow,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('avg '+Math.round(overallAvg)+'%', W-PAD_R+2, avgY+3);
 
-  if(hist.length < 2){
-    // single point — just draw a dot
-    const x = PAD_L + gW/2;
-    const y = PAD_T + gH - (hist[0].pct/100)*gH;
-    ctx.fillStyle = dotC;
-    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
-    drawXLabel(ctx, 0, x, H-8, labelC, hist[0]);
-    return;
-  }
+  // Per-subject lines
+  Object.entries(SUBJ_COLS).forEach(([subj, col])=>{
+    const subjHist = allEntries.filter(h=>h.subject===subj);
+    if(subjHist.length === 0) return;
 
-  const step = gW / (hist.length-1);
-  const pts  = hist.map((h,i)=>({ x: PAD_L + i*step, y: PAD_T + gH - (h.pct/100)*gH }));
+    // X positions: spread within the full width based on their index among all entries
+    const pts = subjHist.map((h,i)=>{
+      const globalIdx = allEntries.indexOf(h);
+      const x = allEntries.length < 2
+        ? PAD_L + gW/2
+        : PAD_L + (globalIdx/(allEntries.length-1))*gW;
+      const y = PAD_T + gH - (h.pct/100)*gH;
+      return {x, y, h};
+    });
 
-  // Gradient fill under line
-  const grad = ctx.createLinearGradient(0,PAD_T,0,PAD_T+gH);
-  grad.addColorStop(0, dark?'rgba(255,255,255,.14)':'rgba(0,180,216,.18)');
-  grad.addColorStop(1, dark?'rgba(255,255,255,0)' :'rgba(0,180,216,0)');
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, PAD_T+gH);
-  pts.forEach(p=>ctx.lineTo(p.x,p.y));
-  ctx.lineTo(pts[pts.length-1].x, PAD_T+gH);
-  ctx.closePath();
-  ctx.fillStyle = grad; ctx.fill();
+    // Gradient fill under line
+    if(pts.length >= 2){
+      const grad = ctx.createLinearGradient(0,PAD_T,0,PAD_T+gH);
+      grad.addColorStop(0, col.replace('#','rgba(').replace(/([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i,
+        (_,r,g,b)=>`${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)}`)+',0.1)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      // build fill path
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, PAD_T+gH);
+      pts.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.lineTo(pts[pts.length-1].x, PAD_T+gH);
+      ctx.closePath();
+      // simple alpha fill instead of gradient parse
+      ctx.fillStyle = col+'18';
+      ctx.fill();
+    }
 
-  // Line
-  ctx.strokeStyle = lineC; ctx.lineWidth = 2; ctx.lineJoin = 'round';
-  ctx.beginPath();
-  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
-  ctx.stroke();
+    // Line
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.lineCap='round';
+    ctx.beginPath();
+    pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    ctx.stroke();
 
-  // Dots + labels
-  pts.forEach((p,i)=>{
-    ctx.fillStyle = dark?'#000':'#f4fbff';
-    ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle = dotC; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,Math.PI*2); ctx.stroke();
-    // x-axis label (abbreviated title)
-    drawXLabel(ctx, i, p.x, H-8, labelC, hist[i]);
+    // Dots
+    pts.forEach(p=>{
+      ctx.fillStyle = dark?'#0a0f1a':'#f0f8ff';
+      ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.stroke();
+    });
+  });
+
+  // X-axis date labels (from all entries, spaced)
+  ctx.fillStyle = labelC; ctx.font='8px Barlow,sans-serif'; ctx.textAlign='center';
+  const step = allEntries.length < 2 ? 1 : Math.ceil(allEntries.length/8);
+  allEntries.forEach((h,i)=>{
+    if(i % step !== 0 && i !== allEntries.length-1) return;
+    const x = allEntries.length < 2 ? PAD_L+gW/2 : PAD_L + (i/(allEntries.length-1))*gW;
+    ctx.fillText(h.date || '', x, H-6);
   });
 }
 
@@ -2901,7 +2964,23 @@ function goto(id){
   el.classList.remove('hidden');
   requestAnimationFrame(() => requestAnimationFrame(() => { el.classList.add('visible'); if(id==='pg-home') updateHomeStats(); if(id==='pg-progress' && currentSubject) renderProgressPage(currentSubject.name); }));
 }
-goto('pg-login');
+// ══ SESSION CHECK ══
+(async () => {
+  try {
+    const { data: { session } } = await supa.auth.getSession();
+    if(session){
+      const user = session.user;
+      setUser(user.user_metadata?.full_name || user.email);
+      currentUserId = user.id;
+      await loadUserSettings();
+      goto(groqApiKey ? 'pg-home' : 'pg-api');
+    } else {
+      goto('pg-login');
+    }
+  } catch(e){
+    goto('pg-login');
+  }
+})();
 
 // ══ ENTER KEYS ══
 document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -2910,48 +2989,64 @@ document.getElementById('l-email').addEventListener('keydown', e => { if(e.key==
 
 // ══ API KEY SETUP ══
 let groqApiKey = '';
+async function loadUserSettings(){
+  if(!currentUserId) return;
+  try {
+    const { data } = await supa.from('user_settings').select('groq_api_key').eq('user_id', currentUserId).single();
+    if(data?.groq_api_key){
+      groqApiKey = data.groq_api_key;
+      const badge = document.getElementById('api-saved-badge');
+      if(badge) badge.style.display = 'inline-flex';
+      const inp = document.getElementById('api-key-inp');
+      if(inp) inp.value = data.groq_api_key;
+    }
+  } catch(e){}
+}
 function gotoApiSetup(){
+  // Fallback: also check localStorage
   const saved = localStorage.getItem('eco_groq_key');
-  if(saved){
+  if(saved && !groqApiKey){
     groqApiKey = saved;
-    // Pre-fill the input and show the active badge
     const inp = document.getElementById('api-key-inp');
     if(inp) inp.value = saved;
     const badge = document.getElementById('api-saved-badge');
     if(badge) badge.style.display = 'inline-flex';
-  } else {
+  } else if(!groqApiKey){
     const badge = document.getElementById('api-saved-badge');
     if(badge) badge.style.display = 'none';
   }
   goto('pg-api');
 }
-function saveApiKey(){
+async function saveApiKey(){
   const inp = document.getElementById('api-key-inp');
   const err = document.getElementById('api-err');
   const key = inp.value.trim();
-  if(!key){ err.textContent = 'Please paste your Groq API key.'; return; }
-  if(!key.startsWith('gsk_') || key.length < 20){
-    err.textContent = "That doesn't look like a valid Groq API key. It should start with gsk_";
-    return;
-  }
   err.textContent = '';
+  if(!key || !key.startsWith('gsk_')){ err.textContent = "Key must start with gsk_"; return; }
   groqApiKey = key;
-  localStorage.setItem('eco_groq_key', key);
-  // Show success then go home
+  localStorage.setItem('eco_groq_key', key); // keep localStorage fallback
+  if(currentUserId){
+    try {
+      await supa.from('user_settings').upsert({ user_id: currentUserId, groq_api_key: key }, { onConflict: 'user_id' });
+    } catch(e){}
+  }
   const badge = document.getElementById('api-saved-badge');
-  badge.style.display = 'inline-flex';
+  if(badge) badge.style.display = 'inline-flex';
   setTimeout(() => goto('pg-home'), 900);
 }
 function skipApiKey(){
   groqApiKey = '';
   goto('pg-home');
 }
-function clearApiKey(){
+async function clearApiKey(){
   groqApiKey = '';
   localStorage.removeItem('eco_groq_key');
-  document.getElementById('api-key-inp').value = '';
+  if(currentUserId){
+    try { await supa.from('user_settings').update({ groq_api_key: null }).eq('user_id', currentUserId); } catch(e){}
+  }
   document.getElementById('api-saved-badge').style.display = 'none';
-  document.getElementById('api-err').textContent = 'Key cleared. Paste a new one above.';
+  document.getElementById('api-key-inp').value = '';
+  showToast('API key cleared');
 }
 function toggleApiKeyVisibility(){
   const inp = document.getElementById('api-key-inp');
@@ -2967,32 +3062,47 @@ function toggleApiKeyVisibility(){
 document.getElementById('api-key-inp').addEventListener('keydown', e => { if(e.key==='Enter') saveApiKey(); });
 
 // ══ AUTH ══
-function doLogin(){
+async function doLogin(){
   const email = document.getElementById('l-email').value.trim();
   const pass  = document.getElementById('l-pass').value;
   const err   = document.getElementById('l-err');
-  if(!email){ err.textContent='Please enter your email or student ID.'; return; }
-  if(!pass){  err.textContent='Password cannot be empty.'; return; }
   err.textContent = '';
-  setUser(email.split('@')[0]);
-  gotoApiSetup();
+  if(!email || !pass){ err.textContent='Please fill in all fields.'; return; }
+  try {
+    const { data, error } = await supa.auth.signInWithPassword({ email, password: pass });
+    if(error){ err.textContent = error.message; return; }
+    const user = data.user;
+    setUser(user.user_metadata?.full_name || user.email);
+    currentUserId = user.id;
+    await loadUserSettings();
+    groqApiKey ? goto('pg-home') : goto('pg-api');
+  } catch(e){ err.textContent = 'Login failed. Please try again.'; }
 }
 function doGuest(){ setUser('Guest'); gotoApiSetup(); }
-function doRegister(){
+async function doRegister(){
   const name  = document.getElementById('r-name').value.trim();
   const email = document.getElementById('r-email').value.trim();
   const pass  = document.getElementById('r-pass').value;
   const pass2 = document.getElementById('r-pass2').value;
   const err   = document.getElementById('r-err');
-  if(!name)  { err.textContent='Please enter your name.'; return; }
-  if(!email) { err.textContent='Please enter your email.'; return; }
-  if(!pass || pass.length < 6) { err.textContent='Password must be at least 6 characters.'; return; }
-  if(pass !== pass2) { err.textContent='Passwords do not match.'; return; }
-  err.textContent='';
-  setUser(name);
-  gotoApiSetup();
+  err.textContent = '';
+  if(!name || !email || !pass){ err.textContent='Please fill in all fields.'; return; }
+  if(pass !== pass2){ err.textContent='Passwords do not match.'; return; }
+  if(pass.length < 6){ err.textContent='Password must be at least 6 characters.'; return; }
+  try {
+    const { data, error } = await supa.auth.signUp({ email, password: pass, options:{ data:{ full_name: name } } });
+    if(error){ err.textContent = error.message; return; }
+    err.style.color = 'rgba(74,222,128,.9)';
+    err.textContent = 'Account created! Check your email to confirm, then sign in.';
+  } catch(e){ err.textContent = 'Registration failed. Please try again.'; }
 }
-function doLogout(){ localStorage.removeItem('eco_groq_key'); groqApiKey=''; goto('pg-login'); }
+async function doLogout(){
+  try { await supa.auth.signOut(); } catch(e){}
+  localStorage.removeItem('eco_groq_key');
+  groqApiKey = '';
+  currentUserId = null;
+  goto('pg-login');
+}
 function setUser(name){
   currentUser = name;
   const av = name[0].toUpperCase();
@@ -3290,6 +3400,19 @@ function showResults(){
   examHistory.push(histEntry);
   if(examHistory.length > 30) examHistory.shift(); // keep last 30
   localStorage.setItem('eco_history', JSON.stringify(examHistory));
+  if(currentUserId){
+    try {
+      supa.from('exam_history').insert({
+        user_id: currentUserId,
+        title:   histEntry.title,
+        subject: histEntry.subject,
+        scored:  histEntry.scored,
+        total:   histEntry.total,
+        pct:     histEntry.pct,
+        ts:      histEntry.ts
+      });
+    } catch(e){}
+  }
   updateHomeStats();
 
   goto('pg-results');
