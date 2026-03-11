@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Eco.gpt</title>
+<title>EduCorps</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;800&family=Caveat:wght@500;600;700&family=Sacramento&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -1468,6 +1468,52 @@ body.mobile-bg #bg-canvas { display:none !important; }
   [data-theme="dark"] .home-stat-val { font-size:1.4rem !important; }
 }
 
+/* ── HOME OVERALL PROGRESS ── */
+.home-overall-wrap{width:min(880px,94vw);background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:22px 26px;animation:riseIn .5s both;}
+.home-overall-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.home-overall-title{font-family:"Bebas Neue",sans-serif;font-size:1.05rem;letter-spacing:.1em;color:var(--fg);}
+.home-overall-sub{font-size:.65rem;opacity:.5;letter-spacing:.08em;text-transform:uppercase;margin-top:3px;}
+.home-overall-pct{font-family:"Bebas Neue",sans-serif;font-size:2rem;letter-spacing:.05em;color:var(--fg);}
+.home-overall-track{position:relative;height:10px;background:var(--brd);border-radius:99px;overflow:hidden;margin-bottom:12px;}
+.home-overall-fill{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.home-overall-segments{position:absolute;inset:0;display:flex;}
+.hos-seg{height:100%;transition:width .8s cubic-bezier(.4,0,.2,1);min-width:0;opacity:.9;}
+.home-overall-legend{display:flex;gap:16px;flex-wrap:wrap;}
+.hol-item{display:flex;align-items:center;gap:6px;font-size:.65rem;opacity:.7;letter-spacing:.06em;text-transform:uppercase;}
+.hol-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+/* ── SUBJECT CARDS GRID ── */
+.home-eyebrow{font-size:.68rem;opacity:.45;letter-spacing:.18em;text-transform:uppercase;text-align:center;}
+.home-subjects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;width:min(880px,94vw);}
+.subj-card{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px 18px 18px;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;animation:riseIn .5s both;}
+.subj-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.25);border-color:var(--subj-col,#00e0ff);}
+.subj-card-accent{position:absolute;top:0;left:0;right:0;height:3px;background:var(--subj-col,#00e0ff);opacity:.85;}
+.subj-card-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--subj-col,#00e0ff);background:rgba(255,255,255,.05);}
+.subj-card-name{font-family:"Bebas Neue",sans-serif;font-size:1.05rem;letter-spacing:.08em;color:var(--fg);line-height:1.2;}
+.subj-card-code{font-size:.56rem;opacity:.4;letter-spacing:.1em;text-transform:uppercase;margin-top:3px;margin-bottom:14px;}
+.subj-card-bar-wrap{height:4px;background:var(--brd);border-radius:99px;overflow:hidden;margin-bottom:8px;}
+.subj-card-bar{height:100%;background:var(--subj-col,#00e0ff);border-radius:99px;width:0%;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.subj-card-stat{font-size:.6rem;opacity:.5;letter-spacing:.06em;text-transform:uppercase;}
+.subj-card-arrow{position:absolute;bottom:14px;right:16px;opacity:.25;transition:opacity .2s,transform .2s;color:var(--subj-col,#00e0ff);}
+.subj-card:hover .subj-card-arrow{opacity:.8;transform:translateX(3px);}
+.subj-card-arrow svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;}
+/* ── SUBJECT HUB PAGE ── */
+.subj-hub-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.subj-hub-name{font-family:"Bebas Neue",sans-serif;font-size:1.8rem;letter-spacing:.1em;}
+.subj-hub-code{font-size:.65rem;opacity:.4;letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+.subj-fill-bar{transition:width .8s cubic-bezier(.4,0,.2,1);}
+/* ── PROGRESS PAGE ── */
+.prog-body{display:flex;flex-direction:column;align-items:center;gap:20px;padding:80px 5vw 60px;min-height:100vh;overflow-y:auto;}
+.prog-heading{font-family:"Bebas Neue",sans-serif;font-size:1.5rem;letter-spacing:.12em;color:var(--fg);text-align:center;}
+.prog-sub{font-size:.65rem;opacity:.4;letter-spacing:.1em;text-transform:uppercase;text-align:center;}
+.prog-subj-list{display:flex;flex-direction:column;gap:12px;width:min(700px,94vw);}
+.prog-subj-row{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px 22px;}
+.prog-subj-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.prog-subj-name-row{display:flex;align-items:center;gap:10px;}
+.prog-subj-name{font-family:"Bebas Neue",sans-serif;font-size:.95rem;letter-spacing:.08em;}
+.prog-subj-pct{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;}
+.prog-bar-wrap{height:6px;background:var(--brd);border-radius:99px;overflow:hidden;margin-bottom:10px;}
+.prog-bar{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1);}
+.prog-subj-meta{display:flex;gap:16px;font-size:.58rem;opacity:.45;letter-spacing:.06em;text-transform:uppercase;}
 </style>
 </head>
 <body>
@@ -1512,8 +1558,8 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <!-- ════ LOGIN ════ -->
 <div class="page hidden" id="pg-login">
   <div class="login-wrap">
-    <div class="login-brand">Eco.gpt</div>
-    <div class="login-tagline">your intelligent study companion</div>
+    <div class="login-brand">EduCorps</div>
+    <div class="login-tagline">your intelligent IGCSE study companion</div>
     <div class="fl">
       <label for="l-email">Email or Student ID</label>
       <input id="l-email" type="text" placeholder="you@institution.edu" autocomplete="off">
@@ -1539,7 +1585,7 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <!-- ════ REGISTER ════ -->
 <div class="page hidden" id="pg-register">
   <div class="login-wrap" style="width:420px">
-    <div class="login-brand">Eco.gpt</div>
+    <div class="login-brand">EduCorps</div>
     <div class="login-tagline" style="margin-bottom:32px">create your account</div>
     <div class="fl">
       <label for="r-name">Full Name</label>
@@ -1574,9 +1620,9 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <!-- ════ API SETUP ════ -->
 <div class="page hidden" id="pg-api">
   <div class="api-wrap">
-    <div class="api-brand">Eco.gpt</div>
+    <div class="api-brand">EduCorps</div>
     <div class="api-heading">Connect Your AI</div>
-    <p class="api-sub">Eco.gpt uses the Groq API for ultra-fast AI marking and feedback. It's free to set up — takes about 60 seconds.</p>
+    <p class="api-sub">EduCorps uses the Groq API for ultra-fast AI marking and feedback across all five IGCSE subjects. It's free to set up — takes about 60 seconds.</p>
 
     <div class="api-steps-list">
       <div class="api-step-item">
@@ -1638,7 +1684,7 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <!-- ════ HOME ════ -->
 <div class="page hidden" id="pg-home">
   <div class="top-bar">
-    <span class="top-logo" onclick="goto('pg-home')">Eco.gpt</span>
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
     <div class="top-right">
       <span class="top-user-name" id="h-user">—</span>
       <div class="top-avatar" id="h-avatar">—</div>
@@ -1653,36 +1699,94 @@ body.mobile-bg #bg-canvas { display:none !important; }
     </div>
   </div>
   <div class="home-body">
-    <div class="home-eyebrow">what would you like to do today?</div>
-    <div class="home-grid">
-      <div class="home-card" onclick="goto('pg-notes')">
-        <div class="card-num">01</div>
-        <div class="card-icon-wrap"><svg width="20" height="20"><use href="#ic-notes"/></svg></div>
-        <div class="card-title">Notes</div>
-        <div class="card-desc">Browse, search and study your organised subject notes.</div>
-        <div class="card-arrow"><svg><use href="#ic-arrow"/></svg></div>
+    <div class="home-eyebrow">choose a subject to begin</div>
+
+    <!-- ── CUMULATIVE PROGRESS BAR ── -->
+    <div class="home-overall-wrap">
+      <div class="home-overall-header">
+        <div>
+          <div class="home-overall-title">Overall Progress</div>
+          <div class="home-overall-sub">cumulative score across all subjects</div>
+        </div>
+        <div class="home-overall-pct" id="overall-pct">—</div>
       </div>
-      <div class="home-card" onclick="goto('pg-topics')">
-        <div class="card-num">02</div>
-        <div class="card-icon-wrap"><svg width="20" height="20"><use href="#ic-topic"/></svg></div>
-        <div class="card-title">Topic Questions</div>
-        <div class="card-desc">Practice questions by topic with timed exam mode.</div>
-        <div class="card-arrow"><svg><use href="#ic-arrow"/></svg></div>
+      <div class="home-overall-track">
+        <div class="home-overall-fill" id="overall-fill" style="width:0%"></div>
+        <div class="home-overall-segments">
+          <div class="hos-seg" id="seg-Mathematics" style="background:#00e0ff" title="Mathematics"></div>
+          <div class="hos-seg" id="seg-Physics" style="background:#7c3aed" title="Physics"></div>
+          <div class="hos-seg" id="seg-Chemistry" style="background:#4ade80" title="Chemistry"></div>
+          <div class="hos-seg" id="seg-Economics" style="background:#e8307e" title="Economics"></div>
+          <div class="hos-seg" id="seg-Computer_Science" style="background:#fbbf24" title="Computer Science"></div>
+        </div>
       </div>
-      <div class="home-card" onclick="goto('pg-papers')">
-        <div class="card-num">03</div>
-        <div class="card-icon-wrap"><svg width="20" height="20"><use href="#ic-paper"/></svg></div>
-        <div class="card-title">Past Papers</div>
-        <div class="card-desc">Full past exam papers with timer and AI marking.</div>
-        <div class="card-arrow"><svg><use href="#ic-arrow"/></svg></div>
+      <div class="home-overall-legend">
+        <div class="hol-item"><span class="hol-dot" style="background:#00e0ff"></span>Maths</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#7c3aed"></span>Physics</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#4ade80"></span>Chemistry</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#e8307e"></span>Economics</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#fbbf24"></span>Comp Sci</div>
       </div>
     </div>
-    <button class="qm-pill" onclick="goto('pg-quickmark')">
-      <span>
-        <svg viewBox="0 0 24 24" width="14" height="14"><use href="#ic-bolt"/></svg>
-        QuickMark — upload &amp; mark any work instantly
-      </span>
-    </button>
+
+    <!-- ── SUBJECT CARDS ── -->
+    <div class="home-subjects-grid">
+      <div class="subj-card" onclick="openSubject('Mathematics')" style="--subj-col:#00e0ff">
+        <div class="subj-card-accent"></div>
+        <div class="subj-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        </div>
+        <div class="subj-card-name">Mathematics</div>
+        <div class="subj-card-code">IGCSE · 0580</div>
+        <div class="subj-card-bar-wrap"><div class="subj-card-bar" id="bar-Mathematics"></div></div>
+        <div class="subj-card-stat" id="stat-Mathematics">0 papers</div>
+        <div class="subj-card-arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow"/></svg></div>
+      </div>
+      <div class="subj-card" onclick="openSubject('Physics')" style="--subj-col:#7c3aed">
+        <div class="subj-card-accent"></div>
+        <div class="subj-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        <div class="subj-card-name">Physics</div>
+        <div class="subj-card-code">IGCSE · 0625</div>
+        <div class="subj-card-bar-wrap"><div class="subj-card-bar" id="bar-Physics"></div></div>
+        <div class="subj-card-stat" id="stat-Physics">0 papers</div>
+        <div class="subj-card-arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow"/></svg></div>
+      </div>
+      <div class="subj-card" onclick="openSubject('Chemistry')" style="--subj-col:#4ade80">
+        <div class="subj-card-accent"></div>
+        <div class="subj-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6v11l3.5 7H5.5L9 14V3z"/><line x1="9" y1="3" x2="9" y2="14"/></svg>
+        </div>
+        <div class="subj-card-name">Chemistry</div>
+        <div class="subj-card-code">IGCSE · 0620</div>
+        <div class="subj-card-bar-wrap"><div class="subj-card-bar" id="bar-Chemistry"></div></div>
+        <div class="subj-card-stat" id="stat-Chemistry">0 papers</div>
+        <div class="subj-card-arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow"/></svg></div>
+      </div>
+      <div class="subj-card" onclick="openSubject('Economics')" style="--subj-col:#e8307e">
+        <div class="subj-card-accent"></div>
+        <div class="subj-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="subj-card-name">Economics</div>
+        <div class="subj-card-code">IGCSE · 0455</div>
+        <div class="subj-card-bar-wrap"><div class="subj-card-bar" id="bar-Economics"></div></div>
+        <div class="subj-card-stat" id="stat-Economics">0 papers</div>
+        <div class="subj-card-arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow"/></svg></div>
+      </div>
+      <div class="subj-card" onclick="openSubject('Computer Science')" style="--subj-col:#fbbf24">
+        <div class="subj-card-accent"></div>
+        <div class="subj-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="subj-card-name">Computer Science</div>
+        <div class="subj-card-code">IGCSE · 0478</div>
+        <div class="subj-card-bar-wrap"><div class="subj-card-bar" id="bar-Computer_Science"></div></div>
+        <div class="subj-card-stat" id="stat-Computer_Science">0 papers</div>
+        <div class="subj-card-arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow"/></svg></div>
+      </div>
+    </div>
 
     <!-- Stats row -->
     <div class="home-stats-row" id="home-stats-row">
@@ -1724,33 +1828,88 @@ body.mobile-bg #bg-canvas { display:none !important; }
       </div>
     </div>
 
-    <!-- Progress graph -->
-    <div class="home-progress-wrap">
-      <div class="home-progress-header">
-        <div>
-          <div class="home-progress-title">Score Progress</div>
-          <div class="home-progress-sub">% per completed paper</div>
-        </div>
-        <div class="home-progress-legend">
-          <div class="hpl-item"><div class="hpl-dot" style="background:var(--fg)"></div><div class="hpl-label">Score %</div></div>
-          <div class="hpl-item"><div class="hpl-dot" style="background:var(--grey);opacity:.45"></div><div class="hpl-label">Average</div></div>
-        </div>
+  </div>
+</div>
+
+<!-- ════ SUBJECT HUB ════ -->
+<div class="page hidden" id="pg-subject">
+  <div class="top-bar">
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
+    <div class="top-right">
+      <button class="pill-btn" onclick="goto('pg-home')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> Subjects</button>
+      <div class="top-avatar" id="subj-avatar">—</div>
+    </div>
+  </div>
+  <div class="home-body">
+    <div style="display:flex;align-items:center;gap:12px;width:min(880px,94vw)">
+      <div class="subj-hub-dot" id="subj-hub-dot"></div>
+      <div>
+        <div class="subj-hub-name" id="subj-hub-name">—</div>
+        <div class="subj-hub-code" id="subj-hub-code">—</div>
       </div>
-      <div id="home-progress-empty" class="home-progress-empty">
-        Complete a past paper or topic<br>to see your progress here
-      </div>
-      <canvas id="home-progress-canvas" style="display:none"></canvas>
     </div>
 
+    <!-- Subject progress bar -->
+    <div class="home-overall-wrap" style="animation-delay:.05s">
+      <div class="home-overall-header">
+        <div>
+          <div class="home-overall-title" id="subj-prog-title">Subject Progress</div>
+          <div class="home-overall-sub">average score in this subject</div>
+        </div>
+        <div class="home-overall-pct" id="subj-pct">—</div>
+      </div>
+      <div class="home-overall-track">
+        <div class="home-overall-fill subj-fill-bar" id="subj-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- 4 action cards -->
+    <div class="home-grid" style="animation-delay:.1s">
+      <div class="home-card" onclick="goto('pg-notes')">
+        <div class="card-num">01</div>
+        <div class="card-icon-wrap"><svg width="20" height="20"><use href="#ic-notes"/></svg></div>
+        <div class="card-title">Notes</div>
+        <div class="card-desc" id="subj-notes-desc">Browse curriculum-aligned revision notes.</div>
+        <div class="card-arrow"><svg><use href="#ic-arrow"/></svg></div>
+      </div>
+      <div class="home-card" onclick="goto('pg-topics')">
+        <div class="card-num">02</div>
+        <div class="card-icon-wrap"><svg width="20" height="20"><use href="#ic-topic"/></svg></div>
+        <div class="card-title">Topic Questions</div>
+        <div class="card-desc" id="subj-topics-desc">Practice by topic with timed exam mode.</div>
+        <div class="card-arrow"><svg><use href="#ic-arrow"/></svg></div>
+      </div>
+      <div class="home-card" onclick="goto('pg-papers')">
+        <div class="card-num">03</div>
+        <div class="card-icon-wrap"><svg width="20" height="20"><use href="#ic-paper"/></svg></div>
+        <div class="card-title">Past Papers</div>
+        <div class="card-desc" id="subj-papers-desc">Full papers with timer &amp; AI marking.</div>
+        <div class="card-arrow"><svg><use href="#ic-arrow"/></svg></div>
+      </div>
+      <div class="home-card" onclick="goto('pg-progress')">
+        <div class="card-num">04</div>
+        <div class="card-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="card-title">My Progress</div>
+        <div class="card-desc" id="subj-progress-desc">Score history &amp; performance charts.</div>
+        <div class="card-arrow"><svg><use href="#ic-arrow"/></svg></div>
+      </div>
+    </div>
+
+    <button class="qm-pill" onclick="goto('pg-quickmark')">
+      <span>
+        <svg viewBox="0 0 24 24" width="14" height="14"><use href="#ic-bolt"/></svg>
+        QuickMark — upload &amp; mark any work instantly
+      </span>
+    </button>
   </div>
 </div>
 
 <!-- ════ NOTES ════ -->
 <div class="page hidden" id="pg-notes">
   <div class="top-bar">
-    <span class="top-logo" onclick="goto('pg-home')">Eco.gpt</span>
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
     <div class="top-right">
-      <button class="pill-btn" onclick="goto('pg-home')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> Home</button>
+      <button class="pill-btn" onclick="goto('pg-subject')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> <span id="notes-back-lbl">Back</span></button>
       <div class="top-avatar" id="n-avatar">—</div>
     </div>
   </div>
@@ -1802,18 +1961,18 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <!-- ════ TOPIC QUESTIONS ════ -->
 <div class="page hidden" id="pg-topics">
   <div class="top-bar">
-    <span class="top-logo" onclick="goto('pg-home')">Eco.gpt</span>
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
     <div class="top-right">
-      <button class="pill-btn" onclick="goto('pg-home')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> Home</button>
+      <button class="pill-btn" onclick="goto('pg-subject')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> <span id="topics-back-lbl">Back</span></button>
       <div class="top-avatar" id="t-avatar">—</div>
     </div>
   </div>
   <div class="sec-body">
     <div class="sec-main">
       <div class="sec-header">
-        <div class="sec-count-badge"><div class="sec-count-dot" style="background:#00e0ff"></div><span id="topics-count-lbl">— Topics</span></div>
-        <div class="sec-heading">Topic Questions</div>
-        <div class="sec-sub">practice by subject area — choose a difficulty on the right</div>
+        <div class="sec-count-badge"><div class="sec-count-dot" id="topics-dot" style="background:#00e0ff"></div><span id="topics-count-lbl">— Topics</span></div>
+        <div class="sec-heading" id="topics-heading">Topic Questions</div>
+        <div class="sec-sub" id="topics-sub">practice by topic — choose a difficulty on the right</div>
       </div>
       <div class="search-wrap">
         <span class="search-icon"><svg><use href="#ic-search"/></svg></span>
@@ -1858,18 +2017,18 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <!-- ════ PAST PAPERS ════ -->
 <div class="page hidden" id="pg-papers">
   <div class="top-bar">
-    <span class="top-logo" onclick="goto('pg-home')">Eco.gpt</span>
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
     <div class="top-right">
-      <button class="pill-btn" onclick="goto('pg-home')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> Home</button>
+      <button class="pill-btn" onclick="goto('pg-subject')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> <span id="papers-back-lbl">Back</span></button>
       <div class="top-avatar" id="p-avatar">—</div>
     </div>
   </div>
   <div class="sec-body">
     <div class="sec-main">
       <div class="sec-header">
-        <div class="sec-count-badge"><div class="sec-count-dot" style="background:#e8307e"></div><span id="papers-count-lbl">— Papers</span></div>
-        <div class="sec-heading">Past Papers</div>
-        <div class="sec-sub">full examination papers with timed mode &amp; AI marking</div>
+        <div class="sec-count-badge"><div class="sec-count-dot" id="papers-dot" style="background:#e8307e"></div><span id="papers-count-lbl">— Papers</span></div>
+        <div class="sec-heading" id="papers-heading">Past Papers</div>
+        <div class="sec-sub" id="papers-sub">full examination papers with timed mode &amp; AI marking</div>
       </div>
       <div class="search-wrap">
         <span class="search-icon"><svg><use href="#ic-search"/></svg></span>
@@ -1987,10 +2146,47 @@ body.mobile-bg #bg-canvas { display:none !important; }
   </div>
 </div>
 
+<!-- ════ PROGRESS ════ -->
+<div class="page hidden" id="pg-progress">
+  <div class="top-bar">
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
+    <div class="top-right">
+      <button class="pill-btn" onclick="goto('pg-subject')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> <span id="prog-back-lbl">Back</span></button>
+      <div class="top-avatar" id="prog-avatar">—</div>
+    </div>
+  </div>
+  <div class="prog-body">
+    <div>
+      <div class="prog-heading" id="prog-page-title">Progress</div>
+      <div class="prog-sub" id="prog-page-sub">score history &amp; performance</div>
+    </div>
+    <div class="prog-subj-list" id="prog-subj-list"></div>
+    <div class="home-overall-wrap" style="margin-top:4px">
+      <div class="home-overall-header">
+        <div>
+          <div class="home-overall-title">Overall Progress</div>
+          <div class="home-overall-sub">cumulative across all subjects</div>
+        </div>
+        <div class="home-overall-pct" id="prog-overall-pct">—</div>
+      </div>
+      <div class="home-overall-track">
+        <div class="home-overall-fill" id="prog-overall-fill" style="width:0%;background:linear-gradient(90deg,#00e0ff,#7c3aed,#4ade80,#e8307e,#fbbf24)"></div>
+      </div>
+      <div class="home-overall-legend">
+        <div class="hol-item"><span class="hol-dot" style="background:#00e0ff"></span>Maths</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#7c3aed"></span>Physics</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#4ade80"></span>Chemistry</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#e8307e"></span>Economics</div>
+        <div class="hol-item"><span class="hol-dot" style="background:#fbbf24"></span>Comp Sci</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ════ QUICKMARK ════ -->
 <div class="page hidden" id="pg-quickmark">
   <div class="top-bar">
-    <span class="top-logo" onclick="goto('pg-home')">Eco.gpt</span>
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
     <div class="top-right">
       <button class="pill-btn" onclick="goto('pg-home')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> Home</button>
     </div>
@@ -2031,7 +2227,7 @@ body.mobile-bg #bg-canvas { display:none !important; }
 
 <!-- ════ LOADING ════ -->
 <div id="loading-overlay">
-  <div class="loading-brand">Eco.gpt</div>
+  <div class="loading-brand">EduCorps</div>
   <div class="loading-label">grading your paper…</div>
   <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
   <div class="loading-pct" id="loading-pct">0%</div>
@@ -2041,7 +2237,7 @@ body.mobile-bg #bg-canvas { display:none !important; }
 <!-- ════ RESULTS ════ -->
 <div class="page hidden" id="pg-results">
   <div class="top-bar">
-    <span class="top-logo" onclick="goto('pg-home')">Eco.gpt</span>
+    <span class="top-logo" onclick="goto('pg-home')">EduCorps</span>
     <div class="top-right">
       <button class="pill-btn" onclick="goto('pg-home')"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg> Home</button>
       <div class="top-avatar" id="res-avatar">—</div>
@@ -2106,71 +2302,258 @@ const NOTES = [
   { id:3, title:'Market Failure', subject:'Economics', body:'Market failure occurs when free markets fail to allocate resources efficiently. Causes: externalities (positive and negative), public goods (non-rival, non-excludable), information asymmetry, merit/demerit goods, and monopoly power leading to deadweight welfare loss.' },
   { id:4, title:'Macroeconomic Objectives', subject:'Economics', body:'Four main objectives: (1) Low and stable inflation — typically 2% CPI target. (2) Low unemployment — especially cyclical and structural. (3) Sustainable economic growth — measured by real GDP. (4) Current account balance — avoiding persistent deficits.' },
   { id:5, title:'Fiscal Policy', subject:'Economics', body:'Fiscal policy uses government spending (G) and taxation (T) to influence aggregate demand. Expansionary: ↑G or ↓T → shifts AD right. Contractionary: ↓G or ↑T → shifts AD left. Automatic stabilisers (e.g. benefits, income tax) act counter-cyclically without deliberate policy change.' },
+  { id:6, title:'Algebra & Equations', subject:'Mathematics', body:'Linear equations: isolate the variable using inverse operations. Quadratic equations: use factorisation, completing the square, or the quadratic formula x = (−b ± √(b²−4ac)) / 2a. Simultaneous equations: solve by substitution or elimination. Always check solutions by substituting back.' },
+  { id:7, title:'Geometry & Trigonometry', subject:'Mathematics', body:'Pythagoras: a² + b² = c² for right-angled triangles. SOH CAH TOA for trigonometric ratios. Circle theorems: angle at centre = 2× angle at circumference; angles in the same segment are equal; opposite angles of a cyclic quadrilateral sum to 180°.' },
+  { id:8, title:'Statistics & Probability', subject:'Mathematics', body:'Mean = Σx/n. Median = middle value when ordered. Mode = most frequent value. Probability of event A: P(A) = favourable outcomes / total outcomes. Independent events: P(A and B) = P(A) × P(B). Mutually exclusive: P(A or B) = P(A) + P(B).' },
+  { id:9, title:'Forces & Motion', subject:'Physics', body:'Newton\'s Laws: (1) An object remains at rest or uniform motion unless acted upon by a net force. (2) F = ma. (3) Every action has an equal and opposite reaction. SUVAT equations link displacement (s), initial velocity (u), final velocity (v), acceleration (a), and time (t).' },
+  { id:10, title:'Electricity & Circuits', subject:'Physics', body:'Ohm\'s Law: V = IR. Series circuits: total resistance = sum of individual resistances; current is the same throughout. Parallel circuits: voltage is the same across each branch; currents add up. Power: P = IV = I²R = V²/R.' },
+  { id:11, title:'Waves & Optics', subject:'Physics', body:'Wave speed: v = fλ (frequency × wavelength). Reflection: angle of incidence = angle of reflection. Refraction: light bends toward the normal when entering a denser medium. Total internal reflection occurs when the angle of incidence exceeds the critical angle.' },
+  { id:12, title:'Atomic Structure', subject:'Chemistry', body:'Atoms consist of protons (positive, nucleus), neutrons (neutral, nucleus), and electrons (negative, shells). Atomic number = number of protons. Mass number = protons + neutrons. Isotopes are atoms of the same element with different numbers of neutrons.' },
+  { id:13, title:'Chemical Bonding', subject:'Chemistry', body:'Ionic bonding: electrons transferred between metals and non-metals, forming ions. Covalent bonding: electrons shared between non-metals. Metallic bonding: delocalised electrons in a lattice of positive ions. Properties differ — ionic solids have high melting points; covalent molecules have low melting points.' },
+  { id:14, title:'Rates of Reaction', subject:'Chemistry', body:'Rate of reaction is affected by: concentration (more collisions), temperature (more energy), surface area (more collisions), catalysts (lower activation energy). Collision theory: particles must collide with sufficient energy and correct orientation for a reaction to occur.' },
+  { id:15, title:'Number Systems & Binary', subject:'Computer Science', body:'Binary (base 2) uses 0 and 1. Convert decimal to binary by repeated division by 2. Binary addition: 0+0=0, 0+1=1, 1+1=10 (carry 1), 1+1+1=11. Hexadecimal (base 16) uses 0–9 and A–F. 1 hex digit = 4 binary bits. Used in memory addressing and colour codes.' },
+  { id:16, title:'Algorithms & Flowcharts', subject:'Computer Science', body:'An algorithm is a set of precise instructions to solve a problem. Flowcharts use: ovals (start/end), rectangles (process), diamonds (decision), parallelograms (input/output). Pseudocode describes algorithms in structured English. Key constructs: sequence, selection (IF/THEN/ELSE), iteration (WHILE/FOR).' },
 ];
 const TOPICS = [
-  { id:1, title:'Microeconomics — Markets', sub:'6 questions · 25 marks', tag:'AS Level', questions:[
+  { id:1, title:'Economics — Markets', sub:'3 questions · 27 marks', tag:'IGCSE', questions:[
     { q:'Explain why a demand curve is typically downward sloping, using the concepts of substitution and income effects.', marks:4 },
     { q:'Using a supply and demand diagram, analyse the effect of a maximum price set below the free market equilibrium.', marks:8 },
     { q:'Assess the view that the price mechanism is the most effective way to allocate resources in an economy.', marks:15 },
   ]},
-  { id:2, title:'Microeconomics — Externalities', sub:'5 questions · 22 marks', tag:'A2 Level', questions:[
+  { id:2, title:'Economics — Market Failure', sub:'3 questions · 26 marks', tag:'IGCSE', questions:[
     { q:'Define the term "negative externality" and give one example from a real-world context.', marks:3 },
     { q:'Using a diagram, explain how a Pigouvian tax may correct a negative production externality.', marks:8 },
     { q:'Evaluate the effectiveness of government policies in reducing carbon emissions.', marks:15 },
   ]},
-  { id:3, title:'Macroeconomics — Inflation', sub:'4 questions · 20 marks', tag:'AS Level', questions:[
-    { q:'Define cost-push inflation and distinguish it from demand-pull inflation.', marks:4 },
-    { q:'Explain two causes of demand-pull inflation with reference to the AD/AS model.', marks:8 },
-    { q:'Assess the distributional impact of high inflation across different groups in the economy.', marks:15 },
+  { id:3, title:'Mathematics — Algebra', sub:'4 questions · 20 marks', tag:'IGCSE', questions:[
+    { q:'Solve the quadratic equation: 2x² − 5x − 3 = 0. Show your working clearly.', marks:4 },
+    { q:'Expand and simplify: (3x + 2)(x − 4) − 2(x² − 1).', marks:4 },
+    { q:'A rectangle has length (2x + 3) cm and width (x − 1) cm. Its area is 40 cm². Form and solve an equation to find x.', marks:6 },
+    { q:'Factorise completely: 6x³ − 24x.', marks:3 },
   ]},
-  { id:4, title:'Macroeconomics — Unemployment', sub:'4 questions · 20 marks', tag:'A2 Level', questions:[
-    { q:'Distinguish between frictional unemployment and structural unemployment, giving one cause of each.', marks:4 },
-    { q:'Explain how supply-side policies can reduce structural unemployment in the long run.', marks:8 },
-    { q:'Evaluate the view that fiscal policy is the most effective way to reduce unemployment.', marks:15 },
+  { id:4, title:'Mathematics — Geometry', sub:'4 questions · 22 marks', tag:'IGCSE', questions:[
+    { q:'In triangle ABC, angle B = 90°, AB = 6 cm, BC = 8 cm. Calculate the length of AC and angle A.', marks:5 },
+    { q:'State three circle theorems and give a diagram for each.', marks:6 },
+    { q:'The volume of a cylinder is 628 cm³ and its height is 8 cm. Find its radius. (π = 3.14)', marks:4 },
+    { q:'Calculate the area of a regular hexagon with side length 5 cm. Show all working.', marks:4 },
+  ]},
+  { id:5, title:'Physics — Forces & Motion', sub:'4 questions · 24 marks', tag:'IGCSE', questions:[
+    { q:'State Newton\'s three laws of motion and give a real-world example for each.', marks:6 },
+    { q:'A car accelerates from rest to 20 m/s in 8 seconds. Calculate the acceleration and the distance travelled.', marks:5 },
+    { q:'Explain the difference between mass and weight, and how weight varies on different planets.', marks:5 },
+    { q:'Analyse the forces acting on a skydiver before and after opening the parachute, referencing terminal velocity.', marks:8 },
+  ]},
+  { id:6, title:'Physics — Electricity', sub:'3 questions · 20 marks', tag:'IGCSE', questions:[
+    { q:'A resistor has a potential difference of 12 V across it and a current of 0.4 A flowing through it. Calculate its resistance and the power dissipated.', marks:5 },
+    { q:'Compare the properties of series and parallel circuits, including what happens to total resistance and current.', marks:8 },
+    { q:'Describe how current flows in a conductor and explain why metals are good conductors of electricity.', marks:4 },
+  ]},
+  { id:7, title:'Chemistry — Atomic Structure', sub:'4 questions · 18 marks', tag:'IGCSE', questions:[
+    { q:'Describe the structure of an atom, identifying the location and charge of each subatomic particle.', marks:4 },
+    { q:'Define the term "isotope". Give an example and explain why isotopes have the same chemical properties.', marks:4 },
+    { q:'Draw the electronic configuration of chlorine (atomic number 17) and explain its reactivity.', marks:5 },
+    { q:'Explain how the periodic table is organised and how atomic number relates to the position of an element.', marks:5 },
+  ]},
+  { id:8, title:'Chemistry — Chemical Reactions', sub:'3 questions · 22 marks', tag:'IGCSE', questions:[
+    { q:'Explain the collision theory of reaction rates. How does temperature affect the rate of a reaction?', marks:6 },
+    { q:'A student investigates the effect of surface area on the rate of reaction between marble chips and hydrochloric acid. Describe an experiment, including variables and method of measuring rate.', marks:8 },
+    { q:'Evaluate the use of catalysts in industrial chemistry, using the Haber process as an example.', marks:8 },
+  ]},
+  { id:9, title:'Computer Science — Binary & Data', sub:'4 questions · 20 marks', tag:'IGCSE', questions:[
+    { q:'Convert the denary number 157 to binary and then to hexadecimal. Show all working.', marks:5 },
+    { q:'Perform the following binary addition: 01101001 + 00110110. Show the result in binary and denary.', marks:5 },
+    { q:'Explain what is meant by "overflow" in the context of binary arithmetic. Give an example.', marks:4 },
+    { q:'Describe two reasons why hexadecimal notation is preferred over binary when representing memory addresses.', marks:4 },
+  ]},
+  { id:10, title:'Computer Science — Algorithms', sub:'3 questions · 22 marks', tag:'IGCSE', questions:[
+    { q:'Trace through the following algorithm with input values 4, 7, 2, 9, 1 and state the output after each iteration.', marks:6 },
+    { q:'Write pseudocode for a program that reads 10 integers and outputs the largest value and its position.', marks:8 },
+    { q:'Compare the bubble sort and merge sort algorithms in terms of their efficiency and suitability for different data sizes.', marks:8 },
   ]},
 ];
 const PAPERS = [
-  { id:1, year:2023, title:'A-Level Economics Paper 1', sub:'2 hrs 15 min · 80 marks', duration:135, questions:[
+  { id:1, year:2023, title:'IGCSE Economics Paper 1', sub:'1 hr 30 min · 80 marks', duration:90, questions:[
     { q:'Define the term "opportunity cost" and explain its relevance to economic decision-making using a real-world example.', marks:4 },
     { q:'With the aid of a diagram, explain the concept of consumer surplus and producer surplus.', marks:8 },
-    { q:'Analyse the causes and consequences of a current account deficit for an economy such as the United Kingdom.', marks:15 },
-    { q:'Evaluate the effectiveness of monetary policy in achieving macroeconomic stability.', marks:25 },
+    { q:'Analyse the causes and consequences of a current account deficit for a developing economy.', marks:15 },
+    { q:'Evaluate the effectiveness of monetary policy in achieving macroeconomic stability.', marks:20 },
   ]},
-  { id:2, year:2022, title:'A-Level Economics Paper 2', sub:'2 hrs · 80 marks', duration:120, questions:[
-    { q:'Using the extract, identify and explain two factors that have contributed to rising energy prices in recent years.', marks:8 },
-    { q:'Assess the microeconomic and macroeconomic impacts of rising energy prices on households and firms.', marks:15 },
-    { q:'Evaluate the view that government intervention in energy markets does more harm than good in the long run.', marks:25 },
+  { id:2, year:2023, title:'IGCSE Mathematics Paper 2', sub:'1 hr 30 min · 70 marks', duration:90, questions:[
+    { q:'Solve: 3x² + 7x − 6 = 0. Leave your answer in surd form if necessary.', marks:4 },
+    { q:'A cone has radius 5 cm and height 12 cm. Calculate its volume and total surface area. (Use π = 3.142)', marks:6 },
+    { q:'The nth term of a sequence is 4n − 3. Find the first 5 terms and explain whether 100 is a term in this sequence.', marks:5 },
+    { q:'Vectors OA = (3, 2) and OB = (−1, 5). Find AB as a column vector and calculate |AB|.', marks:5 },
   ]},
-  { id:3, year:2021, title:'A-Level Economics Paper 3', sub:'2 hrs · 80 marks', duration:120, questions:[
-    { q:'Define GDP and explain one significant limitation of using GDP per capita as a measure of living standards.', marks:5 },
-    { q:'Using the data provided, calculate the rate of economic growth between 2019 and 2021. Show your working.', marks:4 },
-    { q:'Analyse two supply-side policies a government might use to promote long-run economic growth.', marks:15 },
-    { q:'Evaluate the view that inequality is an inevitable and acceptable consequence of economic growth.', marks:25 },
+  { id:3, year:2023, title:'IGCSE Physics Paper 4', sub:'1 hr 15 min · 60 marks', duration:75, questions:[
+    { q:'A car of mass 900 kg accelerates from 5 m/s to 25 m/s in 10 seconds. Calculate the net force applied.', marks:5 },
+    { q:'Describe the energy transfers that occur when a pendulum swings from one end to the other.', marks:5 },
+    { q:'Explain how electromagnetic induction is used in a generator, including the role of magnetic flux and Faraday\'s law.', marks:8 },
+    { q:'Analyse the advantages and disadvantages of nuclear power as a source of electricity.', marks:8 },
   ]},
-  { id:4, year:2020, title:'A-Level Economics Paper 1', sub:'2 hrs 15 min · 80 marks', duration:135, questions:[
-    { q:'Explain the difference between a movement along a demand curve and a shift of the demand curve, using examples.', marks:4 },
-    { q:'With the aid of a diagram, analyse the effect of a government subsidy on the market for electric vehicles.', marks:8 },
-    { q:'Evaluate the view that the price mechanism always leads to the most efficient allocation of scarce resources.', marks:25 },
+  { id:4, year:2022, title:'IGCSE Chemistry Paper 2', sub:'1 hr 15 min · 60 marks', duration:75, questions:[
+    { q:'Describe how you would test for the presence of chloride ions in a solution. State the expected observations.', marks:4 },
+    { q:'Balance the following equation: C₃H₈ + O₂ → CO₂ + H₂O. Calculate the mass of CO₂ produced from 44 g of C₃H₈.', marks:6 },
+    { q:'Explain the principles of electrolysis and describe what occurs at each electrode when dilute sulfuric acid is electrolysed.', marks:8 },
+    { q:'Compare the properties of ionic and covalent compounds with reference to their structure and bonding.', marks:8 },
+  ]},
+  { id:5, year:2022, title:'IGCSE Computer Science Paper 1', sub:'1 hr 45 min · 75 marks', duration:105, questions:[
+    { q:'Convert the hexadecimal value B3 to binary and then to denary. Show your working.', marks:4 },
+    { q:'Write pseudocode for a program that takes an array of 20 integers and outputs the values that are divisible by 3.', marks:8 },
+    { q:'Describe the difference between RAM and ROM, explaining the role of each in a computer system.', marks:6 },
+    { q:'Explain what is meant by a "subroutine" and discuss two advantages of using subroutines in large programs.', marks:6 },
   ]},
 ];
 const AI_RESPONSES = [
-  "That's a key concept. Think about it in terms of incentives — economic agents respond to changes in relative prices by adjusting their behaviour to maximise utility or profit.",
-  "Great question. In exam technique terms, when answering 'evaluate' questions always consider the counter-argument before reaching a supported judgement — this is what secures the higher mark bands.",
-  "Consider the opportunity cost angle here. Every resource allocation decision involves a trade-off, and the best analysis always acknowledges what's being foregone.",
-  "Diagrams are your best friend for this topic. A well-labelled diagram with accurate shifts can earn marks independently from your written analysis.",
-  "Think carefully about short-run versus long-run effects. The immediate impact often differs from the eventual equilibrium — examiners reward students who make this distinction explicitly.",
-  "Good thinking. Also consider distributional effects — who gains, who loses, and whether the outcome is equitable. These points are worth marks in evaluation questions.",
+  "That's a key concept. Think about it in terms of the examiner's mark scheme — always link your answer back to the specific command word (describe, explain, evaluate) to secure top-band marks.",
+  "Great question. For exam technique, when answering 'evaluate' questions always consider the counter-argument before reaching a supported judgement — this applies across all five IGCSE subjects.",
+  "Consider the core principles behind this topic. Whether it's Physics, Chemistry, Maths, Economics, or Computer Science, the strongest answers show you understand the underlying concepts, not just the procedure.",
+  "Diagrams are your best friend in Physics and Economics. A well-labelled diagram with accurate notation can earn marks independently from your written analysis.",
+  "Think carefully about showing your working in Maths and Sciences. Even if your final answer is wrong, examiner can award method marks if your steps are clear and logical.",
+  "Good thinking. In IGCSE Sciences, always use precise scientific vocabulary. Vague or everyday language loses marks even if your understanding is correct.",
 ];
 const MARK_FEEDBACK = [
-  { score:'7/10', fb:'Strong analysis of the key mechanisms. Your evaluation could be strengthened by considering the long-run implications and potential government failures. Include a well-labelled diagram to maximise your mark.' },
-  { score:'5/10', fb:'You have identified the core concepts correctly but your analysis lacks depth. Ensure you apply theory directly to the question context, and always support your argument with specific examples or data.' },
-  { score:'9/10', fb:'Excellent response — your evaluation is well-structured and considers competing perspectives. To reach the top band, develop your concluding judgement further with a clear, supported stance.' },
-  { score:'6/10', fb:'Good understanding shown, but the response would benefit from more precise use of economic terminology. Remember to explicitly address the evaluative element — "assess" or "evaluate" questions require a justified conclusion.' },
-  { score:'8/10', fb:'Very solid work. Your use of diagrams and real-world examples adds credibility. The main area for improvement is the depth of counter-argument in your evaluation section.' },
+  { score:'7/10', fb:'Strong analysis of the key concepts. Your response could be strengthened by applying terminology more precisely and addressing the specific command word more directly. Show all workings in numerical questions.' },
+  { score:'5/10', fb:'You have identified the core ideas correctly but your answer lacks sufficient depth. Ensure you apply theory directly to the question context, and always support your argument with specific examples, data, or diagrams.' },
+  { score:'9/10', fb:'Excellent response — well-structured and accurate. To reach the very top band, develop your concluding judgement further (for essay questions) or double-check units and significant figures (for calculations).' },
+  { score:'6/10', fb:'Good understanding shown, but the response would benefit from more precise use of subject-specific terminology. Remember to explicitly address the evaluative element in \'assess\' or \'evaluate\' questions.' },
+  { score:'8/10', fb:'Very solid work. Your use of examples and clear explanation adds credibility. The main area for improvement is the depth of counter-argument in evaluation sections or checking all steps in calculations.' },
 ];
 
 
 // ══ HOME STATS + PROGRESS GRAPH ══
+
+// ══ SUBJECT SYSTEM ══
+const SUBJECTS = [
+  { name:'Mathematics',   code:'IGCSE · 0580', color:'#00e0ff' },
+  { name:'Physics',       code:'IGCSE · 0625', color:'#7c3aed' },
+  { name:'Chemistry',     code:'IGCSE · 0620', color:'#4ade80' },
+  { name:'Economics',     code:'IGCSE · 0455', color:'#e8307e' },
+  { name:'Computer Science', code:'IGCSE · 0478', color:'#fbbf24' },
+];
+let currentSubject = null;
+
+function openSubject(name){
+  const s = SUBJECTS.find(x=>x.name===name);
+  if(!s) return;
+  currentSubject = s;
+  // Update hub header (guarded)
+  const hubDot = document.getElementById('subj-hub-dot'); if(hubDot) hubDot.style.background = s.color;
+  const hubName = document.getElementById('subj-hub-name'); if(hubName) hubName.textContent = s.name;
+  const hubCode = document.getElementById('subj-hub-code'); if(hubCode) hubCode.textContent = s.code;
+  // Subject progress bar colour + value
+  const fill = document.getElementById('subj-fill');
+  if(fill){ fill.style.background = s.color; }
+  const hist = examHistory.filter(h=>h.subject===name);
+  const subjAvg = hist.length ? Math.round(hist.reduce((a,h)=>a+h.pct,0)/hist.length) : 0;
+  const subjPctEl = document.getElementById('subj-pct'); if(subjPctEl) subjPctEl.textContent = hist.length ? subjAvg+'%' : '—';
+  const subjTitleEl = document.getElementById('subj-prog-title'); if(subjTitleEl) subjTitleEl.textContent = s.name+' Progress';
+  setTimeout(()=>{ const f=document.getElementById('subj-fill'); if(f) f.style.width=subjAvg+'%'; },80);
+  // Back labels
+  const lbl = s.name;
+  ['notes-back-lbl','topics-back-lbl','papers-back-lbl','prog-back-lbl'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent=lbl;
+  });
+  // Filter notes/topics/papers to this subject
+  const subjectNotes  = NOTES.filter(n=>n.subject===name);
+  const subjectTopics = TOPICS.filter(t=>t.title.startsWith(name+' —')||t.title.startsWith(name+' -')||t.title.toLowerCase().includes(name.toLowerCase().split(' ')[0].toLowerCase()));
+  const subjectPapers = PAPERS.filter(p=>p.title.toLowerCase().includes(name.toLowerCase().split(' ')[0].toLowerCase())||p.subject===name);
+  renderNotes(subjectNotes);
+  renderTopics(subjectTopics);
+  renderPapers(subjectPapers);
+  // Update subject-level description cards
+  const nd=document.getElementById('subj-notes-desc');
+  const td=document.getElementById('subj-topics-desc');
+  const pd=document.getElementById('subj-papers-desc');
+  if(nd) nd.textContent = subjectNotes.length+' notes for '+name;
+  if(td) td.textContent = subjectTopics.length+' topic sets to practise';
+  if(pd) pd.textContent = subjectPapers.length+' past papers available';
+  // Progress page setup (guarded)
+  const pptEl = document.getElementById('prog-page-title'); if(pptEl) pptEl.textContent = name+' Progress';
+  const ppsEl = document.getElementById('prog-page-sub'); if(ppsEl) ppsEl.textContent = 'score history & performance';
+  const pa = document.getElementById('prog-avatar'); if(pa) pa.textContent = currentUser[0]||'—';
+  renderProgressPage(name);
+  goto('pg-subject');
+}
+
+function subjAvgForName(name){
+  const hist = examHistory.filter(h=>h.subject===name);
+  return hist.length ? Math.round(hist.reduce((a,h)=>a+h.pct,0)/hist.length) : 0;
+}
+function subjPapersForName(name){
+  return examHistory.filter(h=>h.subject===name).length;
+}
+
+function updateOverallProgress(){
+  const hist = examHistory;
+  // Overall average across all entries
+  const overall = hist.length ? Math.round(hist.reduce((a,h)=>a+h.pct,0)/hist.length) : 0;
+  const overallEl = document.getElementById('overall-pct');
+  if(overallEl) overallEl.textContent = hist.length ? overall+'%' : '—';
+  const overallFill = document.getElementById('overall-fill');
+  if(overallFill) setTimeout(()=>{ overallFill.style.width=overall+'%'; },80);
+
+  // Per-subject segment widths (proportional to number of attempts)
+  const segTotal = SUBJECTS.reduce((a,s)=>a+Math.max(1,subjPapersForName(s.name)),0);
+  SUBJECTS.forEach(s=>{
+    const seg = document.getElementById('seg-'+s.name.replace(' ','_'));
+    if(seg){
+      const share = Math.max(1,subjPapersForName(s.name))/segTotal*100;
+      const avg = subjAvgForName(s.name);
+      seg.style.width = (share * (avg/100)||share*0.1)+'%';
+    }
+    // Per-subject progress bar on subject card
+    const bar = document.getElementById('bar-'+s.name.replace(' ','_'));
+    if(bar) setTimeout(()=>{ bar.style.width=subjAvgForName(s.name)+'%'; },100);
+    // Stat text on card
+    const stat = document.getElementById('stat-'+s.name.replace(' ','_'));
+    if(stat){
+      const n = subjPapersForName(s.name);
+      stat.textContent = n ? n+' paper'+(n!==1?'s':'')+' done' : 'no attempts yet';
+    }
+  });
+
+  // Progress page overall bar
+  const po = document.getElementById('prog-overall-pct');
+  const pf = document.getElementById('prog-overall-fill');
+  if(po) po.textContent = hist.length ? overall+'%' : '—';
+  if(pf) setTimeout(()=>{ pf.style.width=overall+'%'; },80);
+}
+
+function renderProgressPage(subjectName){
+  const list = document.getElementById('prog-subj-list');
+  if(!list) return;
+  list.innerHTML='';
+  const subjects = subjectName ? SUBJECTS.filter(s=>s.name===subjectName) : SUBJECTS;
+  subjects.forEach(s=>{
+    const hist = examHistory.filter(h=>h.subject===s.name);
+    const avg = hist.length ? Math.round(hist.reduce((a,h)=>a+h.pct,0)/hist.length) : 0;
+    const best = hist.length ? Math.max(...hist.map(h=>h.pct)) : 0;
+    const row = document.createElement('div'); row.className='prog-subj-row';
+    row.innerHTML=`
+      <div class="prog-subj-header">
+        <div class="prog-subj-name-row">
+          <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+          <div class="prog-subj-name">${s.name}</div>
+        </div>
+        <div class="prog-subj-pct" style="color:${s.color}">${hist.length?avg+'%':'—'}</div>
+      </div>
+      <div class="prog-bar-wrap"><div class="prog-bar" id="pb-${s.name.replace(' ','_')}" style="background:${s.color};width:0%"></div></div>
+      <div class="prog-subj-meta">
+        <span>${hist.length} attempt${hist.length!==1?'s':''}</span>
+        ${hist.length?'<span>Best: '+best+'%</span>':''}
+        <span>${s.code}</span>
+      </div>`;
+    list.appendChild(row);
+    setTimeout(()=>{
+      const pb=document.getElementById('pb-'+s.name.replace(' ','_'));
+      if(pb) pb.style.width=avg+'%';
+    },120);
+  });
+  if(!list.children.length){
+    list.innerHTML='<div style="opacity:.45;font-size:.78rem;text-align:center;padding:20px">Complete some papers to see your progress.</div>';
+  }
+}
+
 function updateHomeStats(){
   const hist = examHistory;
   document.getElementById('hs-papers').textContent = hist.length;
@@ -2196,8 +2579,10 @@ function updateHomeStats(){
   document.getElementById('hs-streak').textContent = streak;
 
   // Show/hide graph
+  updateOverallProgress();
   const canvas = document.getElementById('home-progress-canvas');
   const empty  = document.getElementById('home-progress-empty');
+  if(!canvas || !empty) return;
   if(hist.length === 0){
     canvas.style.display='none'; empty.style.display='flex'; return;
   }
@@ -2207,7 +2592,7 @@ function updateHomeStats(){
 
 function drawHomeProgress(){
   const canvas = document.getElementById('home-progress-canvas');
-  if(!canvas || canvas.offsetWidth === 0) return;
+  if(!canvas || !canvas.offsetParent || canvas.offsetWidth === 0) return;
   const dpr = window.devicePixelRatio || 1;
   const W = canvas.offsetWidth, H = 150;
   canvas.width  = W * dpr;
@@ -2298,7 +2683,7 @@ function drawXLabel(ctx,i,x,y,color,entry){
   const skip = examHistory.length > 6 ? (i%2!==0) : false;
   if(skip) return;
   ctx.fillStyle = color; ctx.textAlign='center'; ctx.font='8px Barlow,sans-serif';
-  const short = entry.title.replace('A-Level Economics ','').replace('Paper ','P').slice(0,10);
+  const short = entry.title.replace('IGCSE ','').replace(' Paper','').slice(0,10);
   ctx.fillText(short, x, y);
 }
 
@@ -2514,7 +2899,7 @@ function goto(id){
   document.querySelectorAll('.page').forEach(p => { p.classList.remove('visible'); p.classList.add('hidden'); });
   const el = document.getElementById(id);
   el.classList.remove('hidden');
-  requestAnimationFrame(() => requestAnimationFrame(() => { el.classList.add('visible'); if(id==='pg-home') updateHomeStats(); }));
+  requestAnimationFrame(() => requestAnimationFrame(() => { el.classList.add('visible'); if(id==='pg-home') updateHomeStats(); if(id==='pg-progress' && currentSubject) renderProgressPage(currentSubject.name); }));
 }
 goto('pg-login');
 
@@ -2625,7 +3010,8 @@ function toggleAI(panelId){
 // ══ NOTES ══
 // subject → accent colour map
 const SUBJ_COLORS = {
-  'Microeconomics':'#00e0ff','Macroeconomics':'#7c3aed','Economics':'#4ade80',
+  'Mathematics':'#00e0ff','Physics':'#7c3aed','Chemistry':'#4ade80',
+  'Economics':'#e8307e','Computer Science':'#fbbf24',
   'Data':'#f59e0b','Essay':'#e8307e','default':'#aaaaaa'
 };
 function subjColor(s){
@@ -2743,6 +3129,7 @@ function renderPapers(list){
 function filterPapers(q){ renderPapers(PAPERS.filter(p => p.title.toLowerCase().includes(q.toLowerCase()) || String(p.year).includes(q))); }
 (function(){
   const yf = document.getElementById('year-filters');
+  if(!yf) return;
   [...new Set(PAPERS.map(p=>p.year))].sort((a,b)=>b-a).forEach(y => {
     const b = document.createElement('div'); b.className = 'year-tag';
     b.textContent = y;
@@ -2889,8 +3276,11 @@ function showResults(){
   while(questionTimes.length < qs.length) questionTimes.push(Math.floor(30+Math.random()*120));
 
   // ── Save to history ──
+  // Derive subject from exam title
+  const subjectKey = SUBJECTS.find(s=>item.title.toLowerCase().includes(s.name.toLowerCase().split(' ')[0]))?.name || 'Economics';
   const histEntry = {
     title: item.title,
+    subject: subjectKey,
     date: new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'}),
     scored: scored,
     total: total,
